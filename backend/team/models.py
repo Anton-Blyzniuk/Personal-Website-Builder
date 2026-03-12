@@ -1,3 +1,34 @@
+from cloudinary.models import CloudinaryField
 from django.db import models
 
-# Create your models here.
+
+class ProjectRole(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self) -> str:
+        return f"{self.name}"
+
+
+class Teammate(models.Model):
+    first_name = models.CharField(max_length=100)
+    last_name = models.CharField(max_length=100)
+    project_roles = models.ManyToManyField(ProjectRole, related_name="teammates")
+    email = models.EmailField()
+    story = models.TextField(blank=True, null=True)
+    date_of_birth = models.DateField(blank=True, null=True)
+    photo = CloudinaryField("photo", blank=True, null=True, folder="teammates")
+
+    def __str__(self):
+        return f"{self.first_name} {self.last_name}"
+
+
+class Link(models.Model):
+    name = models.CharField(max_length=100)
+    teammate = models.ForeignKey(
+        Teammate, on_delete=models.CASCADE, related_name="social_links"
+    )
+    link = models.URLField(blank=True, null=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.teammate})"
+
