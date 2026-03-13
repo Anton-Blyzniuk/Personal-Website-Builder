@@ -17,9 +17,8 @@ RUN pip install --upgrade pip \
 
 COPY . .
 
-# collect static files (if Django project uses them)
 RUN python manage.py collectstatic --noinput
 
 EXPOSE 8000
 
-CMD ["gunicorn", "project_name.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "3"]
+CMD sh -c "python manage.py migrate && gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --workers 3"
