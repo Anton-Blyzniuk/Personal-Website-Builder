@@ -1,11 +1,11 @@
-from drf_spectacular.utils import (OpenApiExample, OpenApiResponse,
-                                   extend_schema)
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
+from drf_spectacular.utils import OpenApiResponse, extend_schema
 from rest_framework import status
-from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
 from user.serializers import ChangePasswordSerializer
 
 
@@ -17,15 +17,11 @@ class ChangePasswordView(APIView):
         description="Change password.",
         request=ChangePasswordSerializer,
         responses={
-            200: OpenApiResponse(
-                description="Password changed.",
-            ),
-            400: OpenApiResponse(description="current password is wrong."),
-            400: OpenApiResponse(description="new password is invalid."),
+            200: OpenApiResponse(description="Password changed."),
+            400: OpenApiResponse(description="Current password is wrong or new password is invalid."),
         },
         tags=["users"],
     )
-
     def post(self, request):
         user = request.user
         serializer = ChangePasswordSerializer(data=request.data)
@@ -40,16 +36,16 @@ class ChangePasswordView(APIView):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         try:
-            validate_password(user=user, password=new_password)
-        except ValidationError:
+            validate_password(password=new_password, user=user)
+        except DjangoValidationError:
             return Response(
                 {"details": "new password is invalid."},
-                status=status.HTTP_400_BAD_REQUEST
+                status=status.HTTP_400_BAD_REQUEST,
             )
         user.set_password(new_password)
         user.save()
         return Response(
             {"details": "password changed."},
-            status=status.status.HTTP_200_OK
+            status=status.HTTP_200_OK,
         )
-    
+

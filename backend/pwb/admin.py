@@ -78,6 +78,7 @@ class PWBUnitAdmin(nested_admin.NestedModelAdmin):
         EducationUnitInline,
         PWBUnitPhotoInline,
     ]
+
     def save_formset(self, request, form, formset, change):
         if formset.model == Photo:
             instances = formset.save(commit=False)
