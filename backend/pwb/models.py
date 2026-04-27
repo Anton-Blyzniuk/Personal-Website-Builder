@@ -198,7 +198,7 @@ class Photo(models.Model):
                 Photo.objects.filter(pwb_unit=self.pwb_unit, is_main=True).exclude(
                     pk=self.pk
                 ).update(is_main=False)
-        super().save(*args, **kwargs)
+            super().save(*args, **kwargs)
 
     def __str__(self):
         return f"photo -> {self.pwb_unit.unit_name}"

@@ -6,7 +6,7 @@ class ProjectRole(models.Model):
     name = models.CharField(max_length=100, unique=True)
 
     def __str__(self) -> str:
-        return f"{self.name}"
+        return self.name
 
 
 class Teammate(models.Model):

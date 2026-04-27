@@ -19,11 +19,7 @@ from .serializers import TeammateListSerializer, TeammateRetrieveSerializer
 class TeammateViewSet(
     mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
 ):
-    queryset = (
-        Teammate.objects.all()
-        .prefetch_related("links")
-        .prefetch_related("project_roles")
-    )
+    queryset = Teammate.objects.all().prefetch_related("links", "project_roles")
     pagination_class = None
     permission_classes = [IsAdminOrReadOnly]
 

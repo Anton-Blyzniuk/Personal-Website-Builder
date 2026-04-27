@@ -1,14 +1,14 @@
-from django.forms import fields
-from cloudinary.utils import cloudinary_url
 from rest_framework import serializers
 
 from .models import (EducationUnit, ExperienceUnit, Language, Link, Photo,
                      Project, ProjectLink, PWBUnit, Skill)
 
+
 class ProjectLinkSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectLink
         fields = ["name", "url"]
+
 
 class ProjectSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()

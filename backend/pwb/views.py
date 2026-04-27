@@ -13,7 +13,7 @@ from .serializers import PWBUnitSerializer
     summary="Health check", description="Returns API health status", tags=["health"]
 )
 @api_view(["GET"])
-def ping(reqeust):
+def ping(request):
     return Response({"ping": "pong"}, status=status.HTTP_200_OK)
 
 
