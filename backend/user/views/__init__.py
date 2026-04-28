@@ -1,4 +1,9 @@
-from .registration import UserRegistrationView as UserRegistrationView
-from .registration import AdminRegistrationView as AdminRegistrationView
-from .users import MyInfoView as MyInfoView
+from .api_credentials import APICredentialRotateView as APICredentialRotateView
+from .api_credentials import APICredentialView as APICredentialView
+from .auth import RegistrationThrottle as RegistrationThrottle
+from .auth import ThrottledTokenObtainPairView as ThrottledTokenObtainPairView
+from .auth import ThrottledTokenRefreshView as ThrottledTokenRefreshView
 from .password_managment import ChangePasswordView as ChangePasswordView
+from .registration import AdminRegistrationView as AdminRegistrationView
+from .registration import UserRegistrationView as UserRegistrationView
+from .users import MyInfoView as MyInfoView

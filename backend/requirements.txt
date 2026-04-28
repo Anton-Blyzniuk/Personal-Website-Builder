@@ -4,6 +4,7 @@ certifi==2026.2.25
 charset-normalizer==3.4.5
 cloudinary==1.44.1
 coverage==7.13.4
+Pillow==11.2.1
 dj-database-url==3.1.2
 Django==6.0.3
 django-cloudinary-storage==0.3.0

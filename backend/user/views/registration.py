@@ -7,10 +7,12 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from user.serializers import AdminRegisterSerializer, UserRegisterSerializer
+from .auth import RegistrationThrottle
 
 
 class UserRegistrationView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [RegistrationThrottle]
 
     @extend_schema(
         summary="Register user",
@@ -51,6 +53,7 @@ class UserRegistrationView(APIView):
 
 class AdminRegistrationView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [RegistrationThrottle]
 
     @extend_schema(
         summary="Register admin",

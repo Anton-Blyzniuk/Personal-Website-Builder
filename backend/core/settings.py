@@ -130,7 +130,16 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "user.authentication.APIKeyAuthentication",
     ),
+    "DEFAULT_PAGINATION_CLASS": "pwb.pagination.StandardPagination",
+    "PAGE_SIZE": 20,
+    "DEFAULT_THROTTLE_CLASSES": [],
+    "DEFAULT_THROTTLE_RATES": {
+        "registration": "10/hour",
+        "token":        "20/hour",
+        "api_key":      "5/hour",
+    },
 }
 
 SPECTACULAR_SETTINGS = {
