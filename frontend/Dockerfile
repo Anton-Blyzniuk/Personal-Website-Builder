@@ -25,10 +25,47 @@ RUN apk add --no-cache gettext
 RUN rm /etc/nginx/conf.d/default.conf
 
 COPY --from=builder /app/dist /usr/share/nginx/html
-# Stored as .template so the entrypoint can envsubst $PORT into it at runtime
-COPY nginx.conf /etc/nginx/conf.d/default.conf.template
 
-# Inline the entrypoint so there is no external file dependency
+# Inline nginx config — no external file dependency on build context
+COPY <<'NGINX' /etc/nginx/conf.d/default.conf.template
+server {
+    listen ${PORT};
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    gzip on;
+    gzip_vary on;
+    gzip_min_length 1024;
+    gzip_proxied any;
+    gzip_comp_level 6;
+    gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript image/svg+xml;
+
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$ {
+        expires 1y;
+        add_header Cache-Control "public, immutable";
+        try_files $uri =404;
+    }
+
+    location = /env-config.js {
+        expires -1;
+        add_header Cache-Control "no-cache, no-store, must-revalidate";
+        try_files $uri =404;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+        add_header Cache-Control "no-cache";
+    }
+}
+NGINX
+
+# Inline entrypoint — no external file dependency on build context
 COPY <<'SCRIPT' /docker-entrypoint.sh
 #!/bin/sh
 set -e
