@@ -1,14 +1,17 @@
 # syntax=docker/dockerfile:1
+# Build context: repo root. All paths are relative to the repo root.
 
 # ── Stage 1: Build ──────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
+# Copy package files first for layer caching
+COPY frontend/package.json frontend/package-lock.json* ./
 RUN npm ci --prefer-offline
 
-COPY . .
+# Copy the rest of the frontend source
+COPY frontend/ .
 
 # VITE_API_BASE_URL is a build-time fallback only;
 # the real value is injected at runtime via env-config.js
