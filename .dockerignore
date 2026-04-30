@@ -1,11 +1,4 @@
 .git
-backend/
-docker/
-frontend/node_modules/
-frontend/dist/
-frontend/dist-ssr/
-frontend/.env
-frontend/.env.local
-frontend/.env.*.local
-frontend/public/env-config.js
 **/*.log
+**/__pycache__/
+**/*.pyc
