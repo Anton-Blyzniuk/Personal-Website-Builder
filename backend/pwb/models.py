@@ -6,13 +6,15 @@ from user.models import User
 
 
 class PWBUnit(models.Model):
-    unit_name = models.SlugField(unique=True)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name="pwbunits")
-    frist_name = models.CharField(max_length=63)
-    last_name = models.CharField(max_length=63)
-    profession = models.CharField(max_length=63)
-    email = models.EmailField()
-    about = models.TextField(blank=True, null=True)
+    unit_name  = models.SlugField(unique=True)
+    owner      = models.ForeignKey(User, on_delete=models.CASCADE, related_name="pwbunits")
+    first_name = models.CharField(max_length=63)
+    last_name  = models.CharField(max_length=63)
+    headline   = models.CharField(max_length=120)
+    email      = models.EmailField()
+    phone      = models.CharField(max_length=32, blank=True, null=True)
+    location   = models.CharField(max_length=120, blank=True, null=True)
+    about      = models.TextField(blank=True, null=True)
     pdf_resume = CloudinaryField(
         "file",
         resource_type="raw",
@@ -27,21 +29,29 @@ class PWBUnit(models.Model):
 
 
 class Skill(models.Model):
-    name = models.CharField(max_length=100)
-    pwb_unit = models.ForeignKey(
-        PWBUnit, on_delete=models.CASCADE, related_name="skills"
-    )
+    class Level(models.TextChoices):
+        BEGINNER     = "Beginner",     "Beginner"
+        INTERMEDIATE = "Intermediate", "Intermediate"
+        ADVANCED     = "Advanced",     "Advanced"
+        EXPERT       = "Expert",       "Expert"
+
+    name     = models.CharField(max_length=100)
+    category = models.CharField(max_length=100, blank=True, null=True)
+    level    = models.CharField(max_length=20, choices=Level.choices, blank=True, null=True)
+    order    = models.PositiveSmallIntegerField(default=0)
+    pwb_unit = models.ForeignKey(PWBUnit, on_delete=models.CASCADE, related_name="skills")
+
+    class Meta:
+        ordering = ["order"]
 
     def __str__(self):
         return self.name
 
 
 class Link(models.Model):
-    name = models.CharField(max_length=100)
-    url = models.URLField()
-    pwb_unit = models.ForeignKey(
-        PWBUnit, on_delete=models.CASCADE, related_name="links"
-    )
+    name     = models.CharField(max_length=100)
+    url      = models.URLField()
+    pwb_unit = models.ForeignKey(PWBUnit, on_delete=models.CASCADE, related_name="links")
 
     def __str__(self):
         return self.name
@@ -49,91 +59,58 @@ class Link(models.Model):
 
 class Language(models.Model):
     class Level(models.TextChoices):
-        A1_Begginer = "A1 Begginer", "A1 Begginer"
-        A2_Elementary = "A2 Elementary", "A2 Elementary"
-        B1_Intermediate = "B1 Intermediate", "B1 Intermediate"
+        A1_Begginer           = "A1 Begginer",           "A1 Begginer"
+        A2_Elementary         = "A2 Elementary",         "A2 Elementary"
+        B1_Intermediate       = "B1 Intermediate",       "B1 Intermediate"
         B2_Upper_Intermediate = "B2 Upper-Intermediate", "B2 Upper-Intermediate"
-        C1_Advanced = "C1 Advanced", "C1 Advanced"
-        C2_Advanced_Proficy = "C2 Advanced Proficy", "C2 Advanced Proficy"
-        Native = "Native", "Native"
-        Bilingual = "Bilingual", "Bilingual"
+        C1_Advanced           = "C1 Advanced",           "C1 Advanced"
+        C2_Advanced_Proficy   = "C2 Advanced Proficy",   "C2 Advanced Proficy"
+        Native                = "Native",                "Native"
+        Bilingual             = "Bilingual",             "Bilingual"
 
-    name = models.CharField(max_length=100)
-    level = models.CharField(choices=Level.choices)
-    pwb_unit = models.ForeignKey(
-        PWBUnit, on_delete=models.CASCADE, related_name="languages"
-    )
+    name     = models.CharField(max_length=100)
+    level    = models.CharField(choices=Level.choices)
+    pwb_unit = models.ForeignKey(PWBUnit, on_delete=models.CASCADE, related_name="languages")
 
     def __str__(self):
         return self.name
 
 
 class ExperienceUnit(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True, null=True)
-    from_date = models.DateField()
-    to_date = models.DateField()
-    pwb_unit = models.ForeignKey(
-        PWBUnit, on_delete=models.CASCADE, related_name="experience_units"
-    )
+    title        = models.CharField(max_length=120)
+    organization = models.CharField(max_length=120, blank=True, null=True)
+    location     = models.CharField(max_length=120, blank=True, null=True)
+    description  = models.TextField(blank=True, null=True)
+    from_date    = models.DateField()
+    to_date      = models.DateField(blank=True, null=True)
+    order        = models.PositiveSmallIntegerField(default=0)
+    pwb_unit     = models.ForeignKey(PWBUnit, on_delete=models.CASCADE, related_name="experience_units")
 
     def clean(self):
-        if self.to_date and self.from_date:
-            if self.to_date <= self.from_date:
-                raise ValidationError(
-                    {"to_date": "to_date must be later than from_date"}
-                )
+        if self.to_date and self.from_date and self.to_date <= self.from_date:
+            raise ValidationError({"to_date": "to_date must be later than from_date"})
 
     class Meta:
+        ordering = ["order"]
         constraints = [
             models.CheckConstraint(
-                condition=Q(to_date__gt=F("from_date")),
+                condition=Q(to_date__isnull=True) | Q(to_date__gt=F("from_date")),
                 name="experience_to_date_after_from_date",
             )
         ]
 
     def __str__(self):
-        return self.name
-
-
-class Project(models.Model):
-    name = models.CharField(max_length=100)
-    description = models.TextField(blank=True, null=True)
-    pwb_unit = models.ForeignKey(
-        PWBUnit, on_delete=models.CASCADE, related_name="projects"
-    )
-    image = CloudinaryField(
-        "image",
-        blank=True,
-        null=True,
-        folder="pwb_project_images",
-        transformation={
-            "quality": "auto",
-            "fetch_format": "auto",
-            "width": 1200,
-            "height": 1200,
-            "crop": "limit",
-        },
-    )
-
-    def __str__(self):
-        return self.name
-
-
-class ProjectLink(models.Model):
-    name = models.CharField(max_length=100)
-    url = models.URLField()
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name="links")
-
-    def __str__(self):
-        return self.name
+        return self.title
 
 
 class EducationUnit(models.Model):
-    name = models.CharField(max_length=100)
-    from_date = models.DateField()
-    to_date = models.DateField()
-    image = CloudinaryField(
+    institution    = models.CharField(max_length=150)
+    degree         = models.CharField(max_length=120, blank=True, null=True)
+    field_of_study = models.CharField(max_length=120, blank=True, null=True)
+    location       = models.CharField(max_length=120, blank=True, null=True)
+    from_date      = models.DateField()
+    to_date        = models.DateField(blank=True, null=True)
+    image          = CloudinaryField(
         "image",
         blank=True,
         null=True,
@@ -147,27 +124,130 @@ class EducationUnit(models.Model):
         },
     )
     description = models.TextField(blank=True, null=True)
-    pwb_unit = models.ForeignKey(
-        PWBUnit, on_delete=models.CASCADE, related_name="education_units"
-    )
+    order       = models.PositiveSmallIntegerField(default=0)
+    pwb_unit    = models.ForeignKey(PWBUnit, on_delete=models.CASCADE, related_name="education_units")
 
     def clean(self):
-        if self.to_date and self.from_date:
-            if self.to_date <= self.from_date:
-                raise ValidationError(
-                    {"to_date": "to_date must be later than from_date"}
-                )
+        if self.to_date and self.from_date and self.to_date <= self.from_date:
+            raise ValidationError({"to_date": "to_date must be later than from_date"})
 
     class Meta:
+        ordering = ["order"]
         constraints = [
             models.CheckConstraint(
-                condition=Q(to_date__gt=F("from_date")),
+                condition=Q(to_date__isnull=True) | Q(to_date__gt=F("from_date")),
                 name="education_to_date_after_from_date",
             )
         ]
 
     def __str__(self):
+        return self.institution
+
+
+class PortfolioItem(models.Model):
+    title       = models.CharField(max_length=150)
+    category    = models.CharField(max_length=100, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    date        = models.DateField(blank=True, null=True)
+    image       = CloudinaryField(
+        "image",
+        blank=True,
+        null=True,
+        folder="pwb_project_images",
+        transformation={
+            "quality": "auto",
+            "fetch_format": "auto",
+            "width": 1200,
+            "height": 1200,
+            "crop": "limit",
+        },
+    )
+    order    = models.PositiveSmallIntegerField(default=0)
+    pwb_unit = models.ForeignKey(PWBUnit, on_delete=models.CASCADE, related_name="portfolio_items")
+
+    class Meta:
+        ordering = ["order"]
+
+    def __str__(self):
+        return self.title
+
+
+class PortfolioItemLink(models.Model):
+    name           = models.CharField(max_length=100)
+    url            = models.URLField()
+    portfolio_item = models.ForeignKey(PortfolioItem, on_delete=models.CASCADE, related_name="links")
+
+    def __str__(self):
         return self.name
+
+
+class Certification(models.Model):
+    name                 = models.CharField(max_length=150)
+    issuing_organization = models.CharField(max_length=150)
+    issue_date           = models.DateField(blank=True, null=True)
+    expiry_date          = models.DateField(blank=True, null=True)
+    credential_id        = models.CharField(max_length=100, blank=True, null=True)
+    credential_url       = models.URLField(blank=True, null=True)
+    order                = models.PositiveSmallIntegerField(default=0)
+    pwb_unit             = models.ForeignKey(PWBUnit, on_delete=models.CASCADE, related_name="certifications")
+
+    def clean(self):
+        if self.expiry_date and self.issue_date and self.expiry_date <= self.issue_date:
+            raise ValidationError({"expiry_date": "expiry_date must be later than issue_date"})
+
+    class Meta:
+        ordering = ["order"]
+
+    def __str__(self):
+        return self.name
+
+
+class Award(models.Model):
+    title       = models.CharField(max_length=150)
+    issuer      = models.CharField(max_length=150, blank=True, null=True)
+    date        = models.DateField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    order       = models.PositiveSmallIntegerField(default=0)
+    pwb_unit    = models.ForeignKey(PWBUnit, on_delete=models.CASCADE, related_name="awards")
+
+    class Meta:
+        ordering = ["order"]
+
+    def __str__(self):
+        return self.title
+
+
+class CustomSection(models.Model):
+    title    = models.CharField(max_length=150)
+    order    = models.PositiveSmallIntegerField(default=0)
+    pwb_unit = models.ForeignKey(PWBUnit, on_delete=models.CASCADE, related_name="custom_sections")
+
+    class Meta:
+        ordering = ["order"]
+
+    def __str__(self):
+        return self.title
+
+
+class CustomSectionItem(models.Model):
+    title       = models.CharField(max_length=150)
+    subtitle    = models.CharField(max_length=150, blank=True, null=True)
+    from_date   = models.DateField(blank=True, null=True)
+    to_date     = models.DateField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    url         = models.URLField(blank=True, null=True)
+    order       = models.PositiveSmallIntegerField(default=0)
+    section     = models.ForeignKey(CustomSection, on_delete=models.CASCADE, related_name="items")
+
+    def clean(self):
+        if self.to_date and self.from_date and self.to_date <= self.from_date:
+            raise ValidationError({"to_date": "to_date must be later than from_date"})
+
+    class Meta:
+        ordering = ["order"]
+
+    def __str__(self):
+        return self.title
 
 
 class Photo(models.Model):
@@ -184,20 +264,17 @@ class Photo(models.Model):
             "crop": "limit",
         },
     )
-    is_main = models.BooleanField(
-        default=False,
-    )
-
-    pwb_unit = models.ForeignKey(
-        PWBUnit, on_delete=models.CASCADE, related_name="photos"
-    )
+    is_main  = models.BooleanField(default=False)
+    pwb_unit = models.ForeignKey(PWBUnit, on_delete=models.CASCADE, related_name="photos")
 
     def save(self, *args, **kwargs):
-        with transaction.atomic():
-            if self.is_main:
+        if self.is_main:
+            with transaction.atomic():
                 Photo.objects.filter(pwb_unit=self.pwb_unit, is_main=True).exclude(
                     pk=self.pk
                 ).update(is_main=False)
+                super().save(*args, **kwargs)
+        else:
             super().save(*args, **kwargs)
 
     def __str__(self):

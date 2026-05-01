@@ -24,6 +24,6 @@ class TeammateViewSet(
     permission_classes = [IsAdminOrReadOnly]
 
     def get_serializer_class(self):
-        if self.action in {"retrieve", "update", "partial_update"}:
+        if self.action == "retrieve":
             return TeammateRetrieveSerializer
         return TeammateListSerializer

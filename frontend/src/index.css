@@ -1,0 +1,109 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base ──────────────────────────────────────────────────────────────────── */
+@layer base {
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+    font-feature-settings: "cv02","cv03","cv04","cv11";
+    /* smooth theme transitions */
+    transition: background-color .25s ease, color .25s ease;
+  }
+
+  body {
+    @apply text-slate-900 bg-slate-50 antialiased;
+    @apply dark:text-slate-100 dark:bg-slate-950;
+    font-family: 'Inter', system-ui, sans-serif;
+    transition: background-color .25s ease, color .25s ease;
+  }
+
+  /* Selection */
+  ::selection { @apply bg-primary-500/30 text-primary-200; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar              { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track        { background: transparent; }
+  ::-webkit-scrollbar-thumb        { @apply bg-slate-300 dark:bg-slate-700 rounded-full; }
+  ::-webkit-scrollbar-thumb:hover  { @apply bg-slate-400 dark:bg-slate-600; }
+}
+
+/* ── Components ────────────────────────────────────────────────────────────── */
+@layer components {
+  /* Page wrapper — applied to every page root */
+  .page-enter {
+    animation: fade-up .4s cubic-bezier(.16,1,.3,1) both;
+  }
+
+  /* Staggered children */
+  .stagger-children > * {
+    animation: fade-up .4s cubic-bezier(.16,1,.3,1) both;
+  }
+  .stagger-children > *:nth-child(1)  { animation-delay:  0ms; }
+  .stagger-children > *:nth-child(2)  { animation-delay: 60ms; }
+  .stagger-children > *:nth-child(3)  { animation-delay:120ms; }
+  .stagger-children > *:nth-child(4)  { animation-delay:180ms; }
+  .stagger-children > *:nth-child(5)  { animation-delay:240ms; }
+  .stagger-children > *:nth-child(6)  { animation-delay:300ms; }
+  .stagger-children > *:nth-child(7)  { animation-delay:360ms; }
+  .stagger-children > *:nth-child(8)  { animation-delay:420ms; }
+
+  /* Shimmer skeleton */
+  .skeleton {
+    @apply rounded-lg bg-slate-200 dark:bg-slate-800;
+    background: linear-gradient(
+      90deg,
+      theme('colors.slate.200') 25%,
+      theme('colors.slate.100') 50%,
+      theme('colors.slate.200') 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2s linear infinite;
+  }
+  .dark .skeleton {
+    background: linear-gradient(
+      90deg,
+      theme('colors.slate.800') 25%,
+      theme('colors.slate.700') 50%,
+      theme('colors.slate.800') 75%
+    );
+    background-size: 200% 100%;
+  }
+
+  /* Glass card */
+  .glass {
+    @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-slate-700/40;
+  }
+
+  /* Glow on hover — primary */
+  .hover-glow {
+    transition: box-shadow .2s ease, transform .2s ease;
+  }
+  .hover-glow:hover {
+    box-shadow: 0 0 20px rgba(99,102,241,.3);
+    transform: translateY(-1px);
+  }
+}
+
+/* ── Utilities ─────────────────────────────────────────────────────────────── */
+@layer utilities {
+  .scrollbar-none                         { scrollbar-width: none; -ms-overflow-style: none; }
+  .scrollbar-none::-webkit-scrollbar      { display: none; }
+  .transition-theme                       { transition: background-color .25s ease, border-color .25s ease, color .25s ease; }
+}
+
+/* ── Keyframes (for classes used outside Tailwind) ─────────────────────────── */
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes shimmer {
+  from { background-position: -200% 0; }
+  to   { background-position:  200% 0; }
+}

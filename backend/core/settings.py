@@ -10,21 +10,16 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ["SECRET_KEY"]
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "127.0.0.1").split(",")
+ALLOWED_HOSTS = ["*"]
 AUTH_USER_MODEL = "user.User"
 ADMIN_REGISTRATION_SECRET_CODE = os.environ["ADMIN_REGISTRATION_SECRET_CODE"]
 
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
-    for origin in os.environ["CSRF_TRUSTED_ORIGINS"].split(",")
+    for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
     if origin.strip()
 ]
-CORS_ALLOWED_ORIGINS = [
-    origin.strip()
-    for origin in os.environ["CORS_ALLOWED_ORIGINS"].split(",")
-    if origin.strip()
-]
-CORS_ALLOW_CREDENTIALS = os.environ.get("CORS_ALLOW_CREDENTIALS", "False") == "True"
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Static files
 STATIC_URL = "static/"
@@ -130,7 +125,16 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "user.authentication.APIKeyAuthentication",
     ),
+    "DEFAULT_PAGINATION_CLASS": "pwb.pagination.StandardPagination",
+    "PAGE_SIZE": 20,
+    "DEFAULT_THROTTLE_CLASSES": [],
+    "DEFAULT_THROTTLE_RATES": {
+        "registration": "10/hour",
+        "token":        "20/hour",
+        "api_key":      "5/hour",
+    },
 }
 
 SPECTACULAR_SETTINGS = {

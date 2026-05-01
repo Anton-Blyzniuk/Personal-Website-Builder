@@ -1,12 +1,18 @@
+from django.db.models import Prefetch
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import api_view
-from rest_framework.mixins import RetrieveModelMixin
+from rest_framework.mixins import (CreateModelMixin, DestroyModelMixin,
+                                   ListModelMixin, RetrieveModelMixin,
+                                   UpdateModelMixin)
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from .models import PWBUnit
-from .serializers import PWBUnitSerializer
+from .models import CustomSection, PortfolioItem, PWBUnit
+from .permissions import IsOwner
+from .serializers import (PWBUnitCreateSerializer, PWBUnitListSerializer,
+                           PWBUnitSerializer, PWBUnitUpdateSerializer)
 
 
 @extend_schema(
@@ -17,8 +23,8 @@ def ping(request):
     return Response({"ping": "pong"}, status=status.HTTP_200_OK)
 
 
-class PWBUnitViewSet(RetrieveModelMixin, GenericViewSet):
-    queryset = (
+def _full_queryset():
+    return (
         PWBUnit.objects.all()
         .select_related("owner")
         .prefetch_related(
@@ -28,9 +34,72 @@ class PWBUnitViewSet(RetrieveModelMixin, GenericViewSet):
             "experience_units",
             "education_units",
             "photos",
-            "projects",
+            "certifications",
+            "awards",
+            Prefetch("portfolio_items", queryset=PortfolioItem.objects.prefetch_related("links")),
+            Prefetch("custom_sections", queryset=CustomSection.objects.prefetch_related("items")),
         )
     )
-    serializer_class = PWBUnitSerializer
+
+
+class PWBUnitViewSet(
+    CreateModelMixin,
+    ListModelMixin,
+    RetrieveModelMixin,
+    UpdateModelMixin,
+    DestroyModelMixin,
+    GenericViewSet,
+):
+    queryset = _full_queryset()  # used for schema generation & model introspection
     lookup_field = "unit_name"
     lookup_url_kwarg = "unit_name"
+
+    # ------------------------------------------------------------------
+    # Routing helpers
+    # ------------------------------------------------------------------
+
+    def get_queryset(self):
+        if self.action == "list":
+            return PWBUnit.objects.filter(owner=self.request.user)
+        return _full_queryset()
+
+    def get_serializer_class(self):
+        if self.action == "create":
+            return PWBUnitCreateSerializer
+        if self.action in ("update", "partial_update"):
+            return PWBUnitUpdateSerializer
+        if self.action == "list":
+            return PWBUnitListSerializer
+        return PWBUnitSerializer
+
+    def get_permissions(self):
+        if self.action == "retrieve":
+            return [AllowAny()]
+        if self.action in ("update", "partial_update", "destroy"):
+            return [IsAuthenticated(), IsOwner()]
+        return [IsAuthenticated()]  # list, create
+
+    # ------------------------------------------------------------------
+    # Actions
+    # ------------------------------------------------------------------
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        instance = _full_queryset().get(pk=serializer.instance.pk)
+        response = PWBUnitSerializer(instance, context=self.get_serializer_context())
+        return Response(response.data, status=status.HTTP_201_CREATED,
+                        headers=self.get_success_headers(response.data))
+
+    def update(self, request, *args, **kwargs):
+        partial  = kwargs.pop("partial", False)
+        instance = self.get_object()  # enforces IsOwner object permission
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        instance = _full_queryset().get(pk=instance.pk)
+        return Response(PWBUnitSerializer(instance, context=self.get_serializer_context()).data)
