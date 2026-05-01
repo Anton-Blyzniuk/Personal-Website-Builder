@@ -10,21 +10,16 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ["SECRET_KEY"]
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
-ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", "127.0.0.1").split(",")
+ALLOWED_HOSTS = ["*"]
 AUTH_USER_MODEL = "user.User"
 ADMIN_REGISTRATION_SECRET_CODE = os.environ["ADMIN_REGISTRATION_SECRET_CODE"]
 
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
-    for origin in os.environ["CSRF_TRUSTED_ORIGINS"].split(",")
+    for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
     if origin.strip()
 ]
-CORS_ALLOWED_ORIGINS = [
-    origin.strip()
-    for origin in os.environ["CORS_ALLOWED_ORIGINS"].split(",")
-    if origin.strip()
-]
-CORS_ALLOW_CREDENTIALS = os.environ.get("CORS_ALLOW_CREDENTIALS", "False") == "True"
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Static files
 STATIC_URL = "static/"
