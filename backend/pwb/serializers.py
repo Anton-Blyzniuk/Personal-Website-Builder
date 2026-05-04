@@ -130,6 +130,7 @@ class PWBUnitSerializer(serializers.ModelSerializer):
             "phone",
             "location",
             "about",
+            "template",
             "pdf_resume",
             "skills",
             "links",
@@ -155,7 +156,7 @@ class PWBUnitListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PWBUnit
-        fields = ["unit_name", "first_name", "last_name", "headline", "email", "phone", "location"]
+        fields = ["unit_name", "first_name", "last_name", "headline", "email", "phone", "location", "template"]
 
 
 # ---------------------------------------------------------------------------
@@ -360,6 +361,7 @@ class PWBUnitCreateSerializer(serializers.ModelSerializer):
         fields = [
             "unit_name",
             "first_name", "last_name", "headline", "email", "phone", "location", "about",
+            "template",
             "skills", "links", "languages", "experience_units", "education_units",
             "portfolio_items", "certifications", "awards", "custom_sections",
         ]
@@ -391,6 +393,7 @@ class PWBUnitUpdateSerializer(serializers.ModelSerializer):
         model = PWBUnit
         fields = [
             "first_name", "last_name", "headline", "email", "phone", "location", "about",
+            "template",
             "skills", "links", "languages", "experience_units", "education_units",
             "portfolio_items", "certifications", "awards", "custom_sections",
         ]

@@ -1,0 +1,113 @@
+{
+  "unit_name": "antonblyzniuk",
+  "first_name": "Anton",
+  "last_name": "Blyzniuk",
+  "headline": "Backend Developer",
+  "email": "professional@antonblyzniuk.com",
+  "about": "Ever since I can remember, I've been drawn to computers. I got my first one at six and spent my time exploring its inner workings, learning through trial and error. That curiosity stayed with me as I grew older and started pushing outdated hardware to its limits—tweaking configurations, overclocking, and upgrading parts. I wasn't just using the machine; I was learning how it worked.\n\nLater I discovered Python, and that changed how I think about problems. I've since built APIs, Telegram bots, automation tools, and backend systems for real Ukrainian businesses, plus open-source projects used by other developers. My stack centers on Django, DRF, FastAPI, Postgres, Redis, and Docker, deployed on AWS and Railway. I care about systems that are simple to reason about, easy to change, and actually solve the problem they were built for.",
+  "skills": [
+    { "name": "Python" },
+    { "name": "Django" },
+    { "name": "Django REST" },
+    { "name": "Docker" },
+    { "name": "Redis" },
+    { "name": "Postgres" },
+    { "name": "FastAPI" },
+    { "name": "JWT" },
+    { "name": "Git" },
+    { "name": "SQL" },
+    { "name": "AWS" },
+    { "name": "Railway" },
+    { "name": "Celery" },
+    { "name": "Telegram Bot API" }
+  ],
+  "links": [
+    { "name": "GitHub", "url": "https://github.com/antonblyzniuk" },
+    { "name": "LinkedIn", "url": "https://www.linkedin.com/in/antonblyzniuk/" },
+    { "name": "Instagram", "url": "https://www.instagram.com/antonblyzniukmain/" },
+    { "name": "Telegram", "url": "https://t.me/antonblyzniuk" },
+    { "name": "Email", "url": "https://mail.google.com/mail/?view=cm&fs=1&to=professional@antonblyzniuk.com&su=Website%20visiter&body=Hi%20Anton" }
+  ],
+  "languages": [
+    { "name": "English", "level": "C1 Advanced" },
+    { "name": "Ukrainian", "level": "Native" }
+  ],
+  "experience_units": [
+    {
+      "title": "Freelance Backend Developer",
+      "description": "Built and maintained Telegram bots, REST APIs, and automation tools for Ukrainian businesses. Delivered production systems including a product catalog with advanced filtering for a door sales company (vidfranko), and custom Telegram bots for client operations. Stack: Python, Django, DRF, FastAPI, Postgres, Redis, Docker, deployed on AWS and Railway.",
+      "from_date": "2023-02-28",
+      "to_date": "2026-04-16"
+    }
+  ],
+  "education_units": [
+    {
+      "institution": "Secondary and High School Education (Lyceum) – Information Technology Direction",
+      "description": "Specialized IT track covering programming fundamentals, computer systems, and networking.",
+      "from_date": "2019-09-01",
+      "to_date": "2023-05-30"
+    },
+    {
+      "institution": "Mate Academy – Python Developer Course",
+      "description": "Intensive backend-focused Python program. Built group projects and personal applications working with Django, REST APIs, Postgres, and Docker. Received regular code review from mentors and senior developers.",
+      "from_date": "2025-02-01",
+      "to_date": "2025-09-01"
+    },
+    {
+      "institution": "Lingua School - English (A1 - B2)",
+      "description": "Two-year structured English program (A1–B2).",
+      "from_date": "2023-09-01",
+      "to_date": "2025-05-30"
+    }
+  ],
+  "portfolio_items": [
+    {
+      "title": "Personal Website Builder",
+      "description": "Backend API powering portfolio sites like antonblyzniuk.com. Provides structured endpoints for managing personal info, experience, projects, and links, plus visitor analytics. Built with Django REST Framework, Postgres, and Cloudinary, deployed on Railway.",
+      "links": [
+        { "name": "GitHub", "url": "https://github.com/antonblyzniuk/pwb" },
+        { "name": "Try it", "url": "https://pwb.api.antonblyzniuk.com/api/v1/swagger/" }
+      ]
+    },
+    {
+      "title": "Wings Of Help",
+      "description": "Team-built platform connecting volunteers with people who need support. Built the backend API using Django REST Framework and Postgres, including email notifications for volunteer-request matches and admin workflows. Containerized the development environment with Docker. Collaborated with frontend developers to deliver the production system.",
+      "links": [
+        { "name": "Try it", "url": "https://volunteer-site-placeholder-dev.up.railway.app/#/" },
+        { "name": "GitHub", "url": "https://github.com/wings-of-help/volunteer-site-placeholder" },
+        { "name": "Team", "url": "https://volunteer-site-placeholder-dev.up.railway.app/#/about" }
+      ]
+    },
+    {
+      "title": "IT Task Manager",
+      "description": "Open-source Django web app for project and task management aimed at small teams and indie developers. Features include task assignment, status tracking, and team workflows. Built with Django, Postgres, and deployed on Render.",
+      "links": [
+        { "name": "GitHub", "url": "https://github.com/antonblyzniuk/it-task-manager" },
+        { "name": "Try it", "url": "https://it-task-manager.antonblyzniuk.com" }
+      ]
+    },
+    {
+      "title": "Airport API",
+      "description": "A clean and production-ready RESTful API for managing airports, flights, users, and ticket orders — featuring JWT authentication, Cloudinary media storage, brute-force login protection, and fully Dockerized local development.",
+      "links": [
+        { "name": "GitHub", "url": "https://github.com/antonblyzniuk/airport-API" },
+        { "name": "Try it", "url": "https://airport-api-dott.onrender.com/api/doc/swagger/" }
+      ]
+    },
+    {
+      "title": "Vidfranko — Door Sales Platform",
+      "description": "Backend API for a Ukrainian door sales and installation business. Built the product catalog system with multi-attribute filtering (material, size, price range, style) and admin endpoints for product management. Worked in a team alongside frontend developers to deliver a production e-commerce site. Stack: Django, DRF, Postgres.",
+      "links": [
+        { "name": "Try it", "url": "https://vidfranko.com.ua" }
+      ]
+    },
+    {
+      "title": "antonblyzniuk.com",
+      "description": "Designed and developed a modern, responsive portfolio website to present personal information, projects, and technical skills. Built on a custom PWB (Personal Website Builder) API, developed to streamline the creation and management of similar web projects. Integrated the Telegram API to send real-time notifications to a bot when users visit the site or download the CV in PDF format. Implemented an AI assistant using the OpenRouter API with the DeepSeek model to provide interactive user engagement. Focused on clean UI/UX design, performance, and scalable architecture.",
+      "links": [
+        { "name": "Try it", "url": "https://www.antonblyzniuk.com/" },
+        { "name": "API", "url": "https://pwb.api.antonblyzniuk.com/api/v1/swagger/" }
+      ]
+    }
+  ]
+}

@@ -6,6 +6,12 @@ from user.models import User
 
 
 class PWBUnit(models.Model):
+    TEMPLATE_CHOICES = [
+        ('classic', 'Classic'),
+        ('modern', 'Modern'),
+        ('minimal', 'Minimal'),
+    ]
+
     unit_name  = models.SlugField(unique=True)
     owner      = models.ForeignKey(User, on_delete=models.CASCADE, related_name="pwbunits")
     first_name = models.CharField(max_length=63)
@@ -15,6 +21,7 @@ class PWBUnit(models.Model):
     phone      = models.CharField(max_length=32, blank=True, null=True)
     location   = models.CharField(max_length=120, blank=True, null=True)
     about      = models.TextField(blank=True, null=True)
+    template   = models.CharField(max_length=20, choices=TEMPLATE_CHOICES, default='classic')
     pdf_resume = CloudinaryField(
         "file",
         resource_type="raw",

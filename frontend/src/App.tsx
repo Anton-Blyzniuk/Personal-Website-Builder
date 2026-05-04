@@ -15,6 +15,7 @@ import { PWBUnitEditPage } from './pages/PWBUnitEditPage';
 import { ApiKeysPage } from './pages/ApiKeysPage';
 import { DocsPage } from './pages/DocsPage';
 import { PWBUnitImportPage } from './pages/PWBUnitImportPage';
+import { CVPage } from './pages/CVPage';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
@@ -39,6 +40,7 @@ function AnimatedRoutes() {
     <Routes location={location} key={location.pathname}>
       <Route path="/" element={<LandingPage />} />
       <Route path="/docs" element={<DocsPage />} />
+      <Route path="/cv/:unitName" element={<CVPage />} />
 
       <Route element={<GuestRoute />}>
         <Route path="/login" element={<LoginPage />} />

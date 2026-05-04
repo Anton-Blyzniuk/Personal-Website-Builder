@@ -12,6 +12,7 @@ import {
   Image,
   Star,
   Save,
+  Palette,
 } from 'lucide-react';
 import { Tabs } from '../ui/Tabs';
 import { Button } from '../ui/Button';
@@ -26,6 +27,7 @@ import { CertificationsSection } from './sections/CertificationsSection';
 import { AwardsSection } from './sections/AwardsSection';
 import { CustomSectionsSection } from './sections/CustomSectionsSection';
 import { PhotosSection } from './sections/PhotosSection';
+import { TemplateSection } from './sections/TemplateSection';
 import type { PWBUnit, PWBUnitUpdatePayload } from '../../types/api';
 
 export type PWBUnitFormData = PWBUnitUpdatePayload & {
@@ -53,6 +55,7 @@ const tabs = [
   { id: 'links', label: 'Links', icon: <Link2 className="h-4 w-4" /> },
   { id: 'custom', label: 'Custom', icon: <Globe className="h-4 w-4" /> },
   { id: 'media', label: 'Photos & Media', icon: <Image className="h-4 w-4" /> },
+  { id: 'template', label: 'Template', icon: <Palette className="h-4 w-4" /> },
 ];
 
 function nullify<T>(val: T | '' | undefined): T | null {
@@ -123,6 +126,7 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
         description: a.description ?? '',
         order: a.order,
       })),
+      template: unit.template ?? 'classic',
       custom_sections: unit.custom_sections.map((cs) => ({
         title: cs.title,
         order: cs.order,
@@ -141,6 +145,7 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
 
   const handleSubmit = form.handleSubmit(async (data) => {
     const payload: PWBUnitUpdatePayload = {
+      template: data.template,
       first_name: data.first_name,
       last_name: data.last_name,
       headline: data.headline,
@@ -247,6 +252,7 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
         {activeTab === 'media' && (
           <PhotosSection unitName={unit.unit_name} pdfResume={unit.pdf_resume} />
         )}
+        {activeTab === 'template' && <TemplateSection form={form} />}
       </div>
     </form>
   );
