@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, ExternalLink, LayoutGrid } from 'lucide-react';
+import { Plus, Pencil, Trash2, ExternalLink, LayoutGrid, Share2 } from 'lucide-react';
 import { pwbUnitsApi } from '../api/pwbunits';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { Button } from '../components/ui/Button';
@@ -94,6 +94,16 @@ export function DashboardPage() {
 
                 {/* Actions */}
                 <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/cv/${unit.unit_name}`);
+                      success('Link copied!');
+                    }}
+                    title="Copy CV link"
+                    className="p-2 text-slate-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-950/40 rounded-lg transition-all duration-150"
+                  >
+                    <Share2 className="h-4 w-4" />
+                  </button>
                   <a
                     href={`${API_BASE_URL}/api/v1/pwbunits/${unit.unit_name}/`}
                     target="_blank"
