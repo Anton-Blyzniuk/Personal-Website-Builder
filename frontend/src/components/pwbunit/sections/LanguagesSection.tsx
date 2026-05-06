@@ -24,7 +24,7 @@ export function LanguagesSection({ form }: { form: UseFormReturn<PWBUnitFormData
     <div className="space-y-4">
       <div className="space-y-3">
         {fields.map((field, index) => (
-          <div key={field.id} className="flex items-start gap-3 bg-slate-50 rounded-xl p-4">
+          <div key={field.id} className="flex items-start gap-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl p-4">
             <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Input placeholder="Language (e.g. English)" {...register(`languages.${index}.name`)} />
               <Select

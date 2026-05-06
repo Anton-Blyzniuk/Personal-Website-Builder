@@ -1,6 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import { API_BASE_URL } from './env';
 import type { ApiError } from '../types/api';
+import { useAuthStore } from '../store/authStore';
 
 export const apiClient = axios.create({
   baseURL: `${API_BASE_URL}/api/v1`,
@@ -55,6 +56,7 @@ apiClient.interceptors.response.use(
     if (!refresh) {
       isRefreshing = false;
       localStorage.removeItem('access_token');
+      useAuthStore.getState().logout();
       window.location.href = '/login';
       return Promise.reject(error);
     }
@@ -71,6 +73,7 @@ apiClient.interceptors.response.use(
       processQueue(refreshError, null);
       localStorage.removeItem('access_token');
       localStorage.removeItem('refresh_token');
+      useAuthStore.getState().logout();
       window.location.href = '/login';
       return Promise.reject(refreshError);
     } finally {

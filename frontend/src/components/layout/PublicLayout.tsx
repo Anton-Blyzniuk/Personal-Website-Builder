@@ -9,7 +9,7 @@ export function PublicLayout({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, user } = useAuthStore();
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col transition-theme">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col transition-theme" style={{'--header-height': '73px'} as React.CSSProperties}>
       <header className="sticky top-0 z-30 bg-white/80 dark:bg-slate-950/80 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/60 transition-theme">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-2.5 group">

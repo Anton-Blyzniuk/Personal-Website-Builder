@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, ExternalLink, LayoutGrid } from 'lucide-react';
+import { Plus, Pencil, Trash2, ExternalLink, LayoutGrid, Share2 } from 'lucide-react';
 import { pwbUnitsApi } from '../api/pwbunits';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { Button } from '../components/ui/Button';
@@ -72,7 +72,7 @@ export function DashboardPage() {
                 {/* Avatar */}
                 <div className="h-11 w-11 rounded-xl bg-gradient-to-br from-primary-600 to-primary-800 flex items-center justify-center shrink-0 shadow-glow-sm">
                   <span className="text-white text-base font-bold">
-                    {unit.first_name[0]?.toUpperCase()}
+                    {(unit.first_name[0] ?? unit.last_name[0] ?? '?').toUpperCase()}
                   </span>
                 </div>
 
@@ -93,12 +93,24 @@ export function DashboardPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
+                <div className="flex items-center gap-1 shrink-0 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-150">
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(`${window.location.origin}/cv/${unit.unit_name}`);
+                      success('Link copied!');
+                    }}
+                    title="Copy CV link"
+                    aria-label={`Copy CV link for ${unit.first_name} ${unit.last_name}`}
+                    className="p-2 text-slate-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-950/40 rounded-lg transition-all duration-150"
+                  >
+                    <Share2 className="h-4 w-4" />
+                  </button>
                   <a
                     href={`${API_BASE_URL}/api/v1/pwbunits/${unit.unit_name}/`}
                     target="_blank"
                     rel="noreferrer"
                     title="View public JSON"
+                    aria-label={`View public JSON for ${unit.first_name} ${unit.last_name}`}
                     className="p-2 text-slate-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-950/40 rounded-lg transition-all duration-150"
                   >
                     <ExternalLink className="h-4 w-4" />
@@ -107,6 +119,7 @@ export function DashboardPage() {
                     to={`/dashboard/pwbunits/${unit.unit_name}/edit`}
                     className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-all duration-150"
                     title="Edit"
+                    aria-label={`Edit ${unit.first_name} ${unit.last_name}`}
                   >
                     <Pencil className="h-4 w-4" />
                   </Link>
@@ -114,6 +127,7 @@ export function DashboardPage() {
                     onClick={() => setDeleteTarget(unit)}
                     className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-all duration-150"
                     title="Delete"
+                    aria-label={`Delete ${unit.first_name} ${unit.last_name}`}
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>

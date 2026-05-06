@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   User,
@@ -6,12 +6,14 @@ import {
   GraduationCap,
   FolderOpen,
   Award,
+  BadgeCheck,
   Globe,
   Languages,
   Link2,
   Image,
   Star,
   Save,
+  Palette,
 } from 'lucide-react';
 import { Tabs } from '../ui/Tabs';
 import { Button } from '../ui/Button';
@@ -26,6 +28,7 @@ import { CertificationsSection } from './sections/CertificationsSection';
 import { AwardsSection } from './sections/AwardsSection';
 import { CustomSectionsSection } from './sections/CustomSectionsSection';
 import { PhotosSection } from './sections/PhotosSection';
+import { TemplateSection } from './sections/TemplateSection';
 import type { PWBUnit, PWBUnitUpdatePayload } from '../../types/api';
 
 export type PWBUnitFormData = PWBUnitUpdatePayload & {
@@ -47,12 +50,13 @@ const tabs = [
   { id: 'experience', label: 'Experience', icon: <Briefcase className="h-4 w-4" /> },
   { id: 'education', label: 'Education', icon: <GraduationCap className="h-4 w-4" /> },
   { id: 'portfolio', label: 'Portfolio', icon: <FolderOpen className="h-4 w-4" /> },
-  { id: 'certifications', label: 'Certifications', icon: <Award className="h-4 w-4" /> },
+  { id: 'certifications', label: 'Certifications', icon: <BadgeCheck className="h-4 w-4" /> },
   { id: 'awards', label: 'Awards', icon: <Award className="h-4 w-4" /> },
   { id: 'languages', label: 'Languages', icon: <Languages className="h-4 w-4" /> },
   { id: 'links', label: 'Links', icon: <Link2 className="h-4 w-4" /> },
   { id: 'custom', label: 'Custom', icon: <Globe className="h-4 w-4" /> },
   { id: 'media', label: 'Photos & Media', icon: <Image className="h-4 w-4" /> },
+  { id: 'template', label: 'Template', icon: <Palette className="h-4 w-4" /> },
 ];
 
 function nullify<T>(val: T | '' | undefined): T | null {
@@ -123,6 +127,7 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
         description: a.description ?? '',
         order: a.order,
       })),
+      template: unit.template ?? 'classic',
       custom_sections: unit.custom_sections.map((cs) => ({
         title: cs.title,
         order: cs.order,
@@ -139,8 +144,24 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
     },
   });
 
+  const { isDirty } = form.formState;
+
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (isDirty) { e.preventDefault(); e.returnValue = ''; }
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isDirty]);
+
+  const handleTabChange = (id: string) => {
+    setActiveTab(id);
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleSubmit = form.handleSubmit(async (data) => {
     const payload: PWBUnitUpdatePayload = {
+      template: data.template,
       first_name: data.first_name,
       last_name: data.last_name,
       headline: data.headline,
@@ -219,7 +240,7 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
   return (
     <form onSubmit={handleSubmit}>
       {/* Sticky save bar */}
-      <div className="sticky top-0 z-10 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 px-0 py-3 flex items-center justify-between mb-2 -mx-1 px-1 transition-theme">
+      <div className="sticky top-0 z-10 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 py-3 flex items-center justify-between mb-2 -mx-1 px-1 transition-theme">
         <div>
           <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             {unit.first_name} {unit.last_name}
@@ -231,7 +252,7 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
         </Button>
       </div>
 
-      <Tabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
+      <Tabs tabs={tabs} active={activeTab} onChange={handleTabChange} />
 
       <div className="pt-6">
         {activeTab === 'basic' && <BasicInfoSection form={form} />}
@@ -247,6 +268,7 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
         {activeTab === 'media' && (
           <PhotosSection unitName={unit.unit_name} pdfResume={unit.pdf_resume} />
         )}
+        {activeTab === 'template' && <TemplateSection form={form} />}
       </div>
     </form>
   );

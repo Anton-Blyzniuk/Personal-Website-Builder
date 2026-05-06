@@ -49,6 +49,12 @@
   .stagger-children > *:nth-child(6)  { animation-delay:300ms; }
   .stagger-children > *:nth-child(7)  { animation-delay:360ms; }
   .stagger-children > *:nth-child(8)  { animation-delay:420ms; }
+  .stagger-children > *:nth-child(9)  { animation-delay:480ms; }
+  .stagger-children > *:nth-child(10) { animation-delay:540ms; }
+  .stagger-children > *:nth-child(11) { animation-delay:600ms; }
+  .stagger-children > *:nth-child(12) { animation-delay:660ms; }
+
+  .animate-marquee:hover { animation-play-state: paused; }
 
   /* Shimmer skeleton */
   .skeleton {
@@ -94,7 +100,16 @@
   .transition-theme                       { transition: background-color .25s ease, border-color .25s ease, color .25s ease; }
 }
 
+.animate-marquee:hover { animation-play-state: paused; }
+
 /* ── Keyframes (for classes used outside Tailwind) ─────────────────────────── */
+/* ── Print / PDF ───────────────────────────────────────────────────────────── */
+@media print {
+  nav, header, footer, button, .no-print { display: none !important; }
+  body { background: white; }
+  .cv-page { padding: 0; margin: 0; max-width: 100%; }
+}
+
 @keyframes fade-up {
   from { opacity: 0; transform: translateY(16px); }
   to   { opacity: 1; transform: translateY(0);    }

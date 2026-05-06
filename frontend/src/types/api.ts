@@ -184,6 +184,7 @@ export interface PWBUnit {
   phone: string | null;
   location: string | null;
   about: string | null;
+  template: 'classic' | 'modern' | 'minimal';
   pdf_resume: string | null;
   photos: Photo[];
   skills: Skill[];
@@ -216,6 +217,7 @@ export interface PWBUnitCreatePayload {
   phone?: string | null;
   location?: string | null;
   about?: string | null;
+  template?: 'classic' | 'modern' | 'minimal';
   skills?: SkillWrite[];
   links?: LinkWrite[];
   languages?: LanguageWrite[];

@@ -10,6 +10,7 @@ import { extractErrorMessage } from '../lib/api';
 import { Input } from '../components/ui/Input';
 import { Button } from '../components/ui/Button';
 import { ThemeToggle } from '../components/ui/ThemeToggle';
+import { LogoMark } from '../components/ui/Logo';
 
 const schema = z.object({
   email: z.string().email('Invalid email address'),
@@ -52,9 +53,8 @@ export function LoginPage() {
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2.5 mb-6 group">
-            <div className="h-11 w-11 rounded-xl bg-primary-600 flex items-center justify-center shadow-glow-sm group-hover:shadow-glow-primary transition-all duration-300">
-              <span className="text-white text-lg font-bold">P</span>
-            </div>
+            <LogoMark className="h-11 w-11 shrink-0 group-hover:scale-105 transition-transform duration-200" />
+            <span className="font-bold text-slate-900 dark:text-white text-lg">PWB</span>
           </Link>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Welcome back</h1>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-500">Sign in to your account</p>

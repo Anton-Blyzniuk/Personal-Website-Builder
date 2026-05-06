@@ -134,7 +134,12 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
 
       {/* Mobile overlay */}
       {sidebarOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Navigation"
+          className="fixed inset-0 z-40 lg:hidden"
+        >
           <div
             className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-fade-in"
             onClick={() => setSidebarOpen(false)}
