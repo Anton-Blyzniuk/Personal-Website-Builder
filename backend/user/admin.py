@@ -14,6 +14,7 @@ class UserAdmin(BaseUserAdmin):
         "email",
         "first_name",
         "last_name",
+        "plan",
         "is_staff",
         "is_active",
     )
@@ -27,6 +28,7 @@ class UserAdmin(BaseUserAdmin):
                     "first_name",
                     "last_name",
                     "profile_picture",
+                    "plan",
                 )
             },
         ),

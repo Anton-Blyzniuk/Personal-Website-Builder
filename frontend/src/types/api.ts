@@ -11,6 +11,22 @@ export interface AccessToken {
 
 // ─── User ────────────────────────────────────────────────────────────────────
 
+export type UserPlan = 'free' | 'pro' | 'pro_plus' | 'owner';
+
+export const PLAN_LIMITS: Record<UserPlan, number | null> = {
+  free: 1,
+  pro: 3,
+  pro_plus: 10,
+  owner: null,
+};
+
+export const PLAN_LABELS: Record<UserPlan, string> = {
+  free: 'Free',
+  pro: 'Pro',
+  pro_plus: 'Pro+',
+  owner: 'Owner',
+};
+
 export interface UserProfile {
   email: string;
   first_name: string;
@@ -20,6 +36,7 @@ export interface UserProfile {
   last_login: string | null;
   date_joined: string;
   profile_picture: string | null;
+  plan: UserPlan;
 }
 
 export interface ApiCredential {

@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
-import { LayoutGrid, Key, BookOpen, LogOut, Menu, X, ChevronRight } from 'lucide-react';
+import { LayoutGrid, Key, BookOpen, LogOut, Menu, X, ChevronRight, Zap } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuthStore } from '../../store/authStore';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { LogoMark } from '../ui/Logo';
+import { PLAN_LABELS, PLAN_LIMITS, UserPlan } from '../../types/api';
 
 interface NavItem { to: string; icon: React.ReactNode; label: string; }
 
@@ -13,6 +14,44 @@ const navItems: NavItem[] = [
   { to: '/dashboard/api-keys', icon: <Key        className="h-4 w-4" />, label: 'API Credentials' },
   { to: '/docs',               icon: <BookOpen   className="h-4 w-4" />, label: 'API Docs'        },
 ];
+
+const PLAN_COLORS: Record<UserPlan, string> = {
+  free:     'bg-slate-700/40 text-slate-300 border-slate-600/30',
+  pro:      'bg-blue-500/20 text-blue-300 border-blue-500/30',
+  pro_plus: 'bg-violet-500/20 text-violet-300 border-violet-500/30',
+  owner:    'bg-amber-500/20 text-amber-300 border-amber-500/30',
+};
+
+function PlanCard({ plan }: { plan: UserPlan }) {
+  const limit = PLAN_LIMITS[plan];
+  const label = PLAN_LABELS[plan];
+  const isOwner = plan === 'owner';
+
+  return (
+    <div className="px-3 pb-2">
+      <div className="rounded-lg border border-white/5 bg-white/[0.03] p-3 space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-xs text-slate-500 font-medium">Your plan</span>
+          <span className={clsx('text-[10px] font-semibold px-2 py-0.5 rounded-full border', PLAN_COLORS[plan])}>
+            {label}
+          </span>
+        </div>
+        <p className="text-xs text-slate-500">
+          {isOwner ? 'Unlimited PWBUnits' : `Up to ${limit} PWBUnit${limit === 1 ? '' : 's'}`}
+        </p>
+        {!isOwner && (
+          <a
+            href={`mailto:bliznukantonmain@gmail.com?subject=Plan upgrade request`}
+            className="flex items-center gap-1.5 text-[11px] font-medium text-primary-400 hover:text-primary-300 transition-colors"
+          >
+            <Zap className="h-3 w-3" />
+            Upgrade plan
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function SidebarContent({ onClose }: { onClose?: () => void }) {
   const { user, logout } = useAuthStore();
@@ -66,6 +105,9 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
           </NavLink>
         ))}
       </nav>
+
+      {/* Plan section */}
+      {user && <PlanCard plan={user.plan} />}
 
       {/* Bottom: theme toggle + user */}
       <div className="px-3 py-4 border-t border-white/5 space-y-2">

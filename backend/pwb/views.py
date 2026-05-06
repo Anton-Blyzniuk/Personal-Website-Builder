@@ -9,6 +9,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from user.models import User
 from .models import CustomSection, PortfolioItem, PWBUnit
 from .permissions import IsOwner
 from .serializers import (PWBUnitCreateSerializer, PWBUnitListSerializer,
@@ -87,6 +88,14 @@ class PWBUnitViewSet(
         serializer.save(owner=self.request.user)
 
     def create(self, request, *args, **kwargs):
+        limit = User.PLAN_LIMITS.get(request.user.plan)
+        if limit is not None:
+            count = PWBUnit.objects.filter(owner=request.user).count()
+            if count >= limit:
+                return Response(
+                    {"detail": f"Your {request.user.get_plan_display()} plan allows up to {limit} PWBUnit(s). Contact bliznukantonmain@gmail.com to upgrade."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)

@@ -16,6 +16,7 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
             "last_login",
             "date_joined",
             "profile_picture",
+            "plan",
         )
 
     def get_profile_picture(self, obj):
