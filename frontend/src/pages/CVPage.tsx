@@ -23,6 +23,12 @@ export function CVPage() {
     staleTime: 1000 * 60 * 5,
   });
 
+  useEffect(() => {
+    if (!unit) return;
+    document.title = `${unit.first_name} ${unit.last_name} — ${unit.headline}`;
+    return () => { document.title = 'PWB — Personal Website Builder'; };
+  }, [unit]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -38,11 +44,6 @@ export function CVPage() {
       </div>
     );
   }
-
-  useEffect(() => {
-    document.title = `${unit.first_name} ${unit.last_name} — ${unit.headline}`;
-    return () => { document.title = 'PWB — Personal Website Builder'; };
-  }, [unit]);
 
   const Template = TEMPLATE_MAP[unit.template ?? 'classic'] ?? ClassicTemplate;
   return <Template unit={unit} />;
