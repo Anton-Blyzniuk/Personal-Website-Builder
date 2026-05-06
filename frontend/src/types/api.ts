@@ -11,6 +11,29 @@ export interface AccessToken {
 
 // ─── User ────────────────────────────────────────────────────────────────────
 
+export type UserPlan = 'free' | 'pro' | 'pro_plus' | 'owner';
+
+export const PLAN_LIMITS: Record<UserPlan, number | null> = {
+  free: 1,
+  pro: 3,
+  pro_plus: 10,
+  owner: null,
+};
+
+export const PLAN_LABELS: Record<UserPlan, string> = {
+  free: 'Free',
+  pro: 'Pro',
+  pro_plus: 'Pro+',
+  owner: 'Owner',
+};
+
+export const PLAN_BADGE_COLORS: Record<UserPlan, string> = {
+  free:     'bg-slate-700/40 text-slate-300 border-slate-600/30',
+  pro:      'bg-blue-500/20 text-blue-300 border-blue-500/30',
+  pro_plus: 'bg-violet-500/20 text-violet-300 border-violet-500/30',
+  owner:    'bg-amber-500/20 text-amber-300 border-amber-500/30',
+};
+
 export interface UserProfile {
   email: string;
   first_name: string;
@@ -20,6 +43,7 @@ export interface UserProfile {
   last_login: string | null;
   date_joined: string;
   profile_picture: string | null;
+  plan: UserPlan;
 }
 
 export interface ApiCredential {

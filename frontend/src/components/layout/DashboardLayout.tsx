@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
-import { LayoutGrid, Key, BookOpen, LogOut, Menu, X, ChevronRight } from 'lucide-react';
+import { LayoutGrid, Key, BookOpen, LogOut, Menu, X, ChevronRight, Layers } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuthStore } from '../../store/authStore';
 import { ThemeToggle } from '../ui/ThemeToggle';
 import { LogoMark } from '../ui/Logo';
+import { PLAN_LABELS, PLAN_BADGE_COLORS } from '../../types/api';
 
 interface NavItem { to: string; icon: React.ReactNode; label: string; }
 
 const navItems: NavItem[] = [
   { to: '/dashboard',          icon: <LayoutGrid className="h-4 w-4" />, label: 'My PWBUnits'    },
+  { to: '/dashboard/plans',    icon: <Layers     className="h-4 w-4" />, label: 'Plans'           },
   { to: '/dashboard/api-keys', icon: <Key        className="h-4 w-4" />, label: 'API Credentials' },
   { to: '/docs',               icon: <BookOpen   className="h-4 w-4" />, label: 'API Docs'        },
 ];
+
 
 function SidebarContent({ onClose }: { onClose?: () => void }) {
   const { user, logout } = useAuthStore();
@@ -99,9 +102,14 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className={clsx('text-xs font-semibold truncate transition-colors duration-150', isActive ? 'text-primary-400' : 'text-slate-200')}>
-                    {user.first_name} {user.last_name}
-                  </p>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <p className={clsx('text-xs font-semibold truncate transition-colors duration-150', isActive ? 'text-primary-400' : 'text-slate-200')}>
+                      {user.first_name} {user.last_name}
+                    </p>
+                    <span className={clsx('text-[9px] font-bold px-1.5 py-px rounded-full border shrink-0', PLAN_BADGE_COLORS[user.plan])}>
+                      {PLAN_LABELS[user.plan]}
+                    </span>
+                  </div>
                   <p className="text-slate-600 text-xs truncate">{user.email}</p>
                 </div>
                 <ChevronRight className={clsx('h-3.5 w-3.5 shrink-0 transition-all duration-150', isActive ? 'text-primary-400' : 'text-slate-700 group-hover:text-slate-500')} />

@@ -30,6 +30,26 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    PLAN_FREE = "free"
+    PLAN_PRO = "pro"
+    PLAN_PRO_PLUS = "pro_plus"
+    PLAN_OWNER = "owner"
+
+    PLAN_CHOICES = [
+        (PLAN_FREE, "Free"),
+        (PLAN_PRO, "Pro"),
+        (PLAN_PRO_PLUS, "Pro+"),
+        (PLAN_OWNER, "Owner"),
+    ]
+
+    # None means unlimited
+    PLAN_LIMITS = {
+        PLAN_FREE: 1,
+        PLAN_PRO: 3,
+        PLAN_PRO_PLUS: 10,
+        PLAN_OWNER: None,
+    }
+
     email = models.EmailField(unique=True)
     profile_picture = CloudinaryField(
         "photo", blank=True, null=True, folder="profile_pictures"
@@ -39,6 +59,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     date_joined = models.DateTimeField(default=timezone.now)
+    plan = models.CharField(max_length=20, choices=PLAN_CHOICES, default=PLAN_FREE)
 
     objects = UserManager()
 
