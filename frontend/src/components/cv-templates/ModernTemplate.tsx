@@ -45,11 +45,11 @@ export function ModernTemplate({ unit }: TemplateProps) {
     <div className="cv-page bg-slate-50 dark:bg-slate-900 min-h-screen">
       <div className="max-w-3xl mx-auto pb-12">
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-12">
-          <div className="flex items-start justify-between gap-6">
-            <div className="flex-1">
-              <h1 className="text-4xl font-bold">{unit.first_name} {unit.last_name}</h1>
-              <p className="text-blue-100 mt-2 text-xl">{unit.headline}</p>
+        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 sm:px-8 py-10 sm:py-12">
+          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-3xl sm:text-4xl font-bold break-words">{unit.first_name} {unit.last_name}</h1>
+              <p className="text-blue-100 mt-2 text-lg sm:text-xl">{unit.headline}</p>
               <div className="flex flex-wrap gap-x-4 gap-y-1 mt-4 text-sm text-blue-100">
                 <span>{unit.email}</span>
                 {unit.phone && <span>{unit.phone}</span>}
@@ -71,15 +71,15 @@ export function ModernTemplate({ unit }: TemplateProps) {
                 </div>
               )}
             </div>
-            <div className="shrink-0">
+            <div className="shrink-0 self-start sm:self-auto">
               {mainPhoto ? (
                 <img
                   src={mainPhoto.image}
                   alt={unit.first_name}
-                  className="h-24 w-24 rounded-full object-cover border-4 border-white/30"
+                  className="h-20 w-20 sm:h-24 sm:w-24 rounded-full object-cover border-4 border-white/30"
                 />
               ) : (
-                <div className="h-24 w-24 rounded-full bg-white/20 flex items-center justify-center text-white text-3xl font-bold">
+                <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-white/20 flex items-center justify-center text-white text-3xl font-bold">
                   {initial}
                 </div>
               )}

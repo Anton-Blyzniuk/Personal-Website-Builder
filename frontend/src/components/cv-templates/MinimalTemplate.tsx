@@ -46,11 +46,11 @@ export function MinimalTemplate({ unit }: TemplateProps) {
 
   return (
     <div className="cv-page bg-white dark:bg-slate-950 min-h-screen">
-      <div className="max-w-2xl mx-auto py-12 px-8">
+      <div className="max-w-2xl mx-auto py-10 sm:py-12 px-4 sm:px-8">
         {/* Name & headline */}
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-100">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-3xl sm:text-4xl font-bold text-slate-900 dark:text-slate-100 break-words">
               {unit.first_name} {unit.last_name}
             </h1>
             <p className="text-lg text-slate-500 dark:text-slate-400 mt-1">{unit.headline}</p>

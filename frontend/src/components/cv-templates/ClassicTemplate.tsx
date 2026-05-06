@@ -28,7 +28,7 @@ export function ClassicTemplate({ unit }: TemplateProps) {
   return (
     <div className="cv-page bg-white dark:bg-slate-950 min-h-screen max-w-4xl mx-auto shadow-lg">
       {/* Header */}
-      <div className="bg-slate-900 text-white py-10 px-8 flex items-center justify-between gap-6">
+      <div className="bg-slate-900 text-white py-10 px-4 sm:px-8 flex items-center justify-between gap-6">
         <div className="min-w-0 flex-1">
           <h1 className="text-3xl font-bold break-words">{unit.first_name} {unit.last_name}</h1>
           <p className="text-slate-300 mt-1 text-lg">{unit.headline}</p>
