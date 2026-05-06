@@ -235,12 +235,6 @@ export function LandingPage() {
 
   return (
     <PublicLayout>
-      <style>{`
-        @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-        .animate-marquee { animation: marquee 32s linear infinite; }
-        .animate-marquee:hover { animation-play-state: paused; }
-      `}</style>
-
       {/* ═══════════════════════════════════════════════════════════════════════
           HERO
           overflow-hidden is on the background layer only so floating cards
@@ -341,8 +335,7 @@ export function LandingPage() {
 
               {/* Floating card — bottom left, desktop only */}
               <div
-                className="hidden lg:flex absolute -bottom-5 -left-8 z-10 bg-[#0e0e1b] rounded-2xl px-4 py-3 shadow-[0_8px_32px_rgba(0,0,0,.4)] border border-white/[0.08] items-center gap-3"
-                style={{ animation: 'float 3s ease-in-out 1.6s infinite' }}
+                className="hidden lg:flex absolute -bottom-5 -left-8 z-10 bg-[#0e0e1b] rounded-2xl px-4 py-3 shadow-[0_8px_32px_rgba(0,0,0,.4)] border border-white/[0.08] items-center gap-3 animate-float-delayed"
               >
                 <div className="h-9 w-9 rounded-xl bg-primary-600 flex items-center justify-center shrink-0 shadow-[0_4px_12px_rgba(99,102,241,.4)]">
                   <Code2 className="h-4 w-4 text-white" />

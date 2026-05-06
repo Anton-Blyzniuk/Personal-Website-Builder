@@ -1,4 +1,5 @@
 import { useParams } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { pwbUnitsApi } from '../api/pwbunits';
 import { ClassicTemplate } from '../components/cv-templates/ClassicTemplate';
@@ -38,6 +39,11 @@ export function CVPage() {
     );
   }
 
-  const Template = TEMPLATE_MAP[unit.template ?? 'classic'];
+  useEffect(() => {
+    document.title = `${unit.first_name} ${unit.last_name} — ${unit.headline}`;
+    return () => { document.title = 'PWB — Personal Website Builder'; };
+  }, [unit]);
+
+  const Template = TEMPLATE_MAP[unit.template ?? 'classic'] ?? ClassicTemplate;
   return <Template unit={unit} />;
 }

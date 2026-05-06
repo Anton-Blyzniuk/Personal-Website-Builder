@@ -61,6 +61,10 @@ export default {
           '0%, 100%': { transform: 'translateY(0)'   },
           '50%':      { transform: 'translateY(-6px)' },
         },
+        marquee: {
+          '0%':   { transform: 'translateX(0)' },
+          '100%': { transform: 'translateX(-50%)' },
+        },
       },
       animation: {
         'fade-up':        'fade-up .4s cubic-bezier(.16,1,.3,1) both',
@@ -72,6 +76,8 @@ export default {
         'spin-once':      'spin-once .5s ease',
         'pulse-ring':     'pulse-ring 1.5s ease infinite',
         float:            'float 3s ease-in-out infinite',
+        'float-delayed':  'float 3s ease-in-out 1.6s infinite',
+        marquee:          'marquee 32s linear infinite',
       },
       boxShadow: {
         'glow-primary': '0 0 20px rgba(99,102,241,.35)',

@@ -5,8 +5,8 @@ interface TemplateProps {
   unit: PWBUnit;
 }
 
-function formatDate(dateStr: string | null | undefined): string {
-  if (!dateStr) return 'Present';
+function formatDate(dateStr: string | null | undefined, fallback = 'Present'): string {
+  if (!dateStr) return fallback;
   const parts = dateStr.split('-');
   const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   return `${months[parseInt(parts[1], 10) - 1]} ${parts[0]}`;
@@ -14,14 +14,14 @@ function formatDate(dateStr: string | null | undefined): string {
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 dark:text-gray-500 mb-3">
+    <h2 className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">
       {children}
     </h2>
   );
 }
 
 function Divider() {
-  return <hr className="border-gray-200 dark:border-gray-800 my-6" />;
+  return <hr className="border-slate-200 dark:border-slate-800 my-6" />;
 }
 
 export function MinimalTemplate({ unit }: TemplateProps) {
@@ -45,15 +45,15 @@ export function MinimalTemplate({ unit }: TemplateProps) {
     .sort((a, b) => a.order - b.order);
 
   return (
-    <div className="cv-page bg-white dark:bg-gray-950 min-h-screen">
+    <div className="cv-page bg-white dark:bg-slate-950 min-h-screen">
       <div className="max-w-2xl mx-auto py-12 px-8">
         {/* Name & headline */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100">
+            <h1 className="text-4xl font-bold text-slate-900 dark:text-slate-100">
               {unit.first_name} {unit.last_name}
             </h1>
-            <p className="text-lg text-gray-500 dark:text-gray-400 mt-1">{unit.headline}</p>
+            <p className="text-lg text-slate-500 dark:text-slate-400 mt-1">{unit.headline}</p>
           </div>
           {mainPhoto && (
             <img
@@ -65,7 +65,7 @@ export function MinimalTemplate({ unit }: TemplateProps) {
         </div>
 
         {/* Contact inline */}
-        <p className="mt-3 text-sm text-gray-500 dark:text-gray-400">{contactParts.join(' · ')}</p>
+        <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">{contactParts.join(' · ')}</p>
 
         {/* Links inline */}
         {unit.links.length > 0 && (
@@ -76,7 +76,7 @@ export function MinimalTemplate({ unit }: TemplateProps) {
                 href={l.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-gray-900 dark:text-gray-100 underline underline-offset-2 hover:text-gray-600 dark:hover:text-gray-300"
+                className="text-sm text-slate-900 dark:text-slate-100 underline underline-offset-2 hover:text-slate-600 dark:hover:text-slate-300"
               >
                 {l.name}
               </a>
@@ -89,7 +89,7 @@ export function MinimalTemplate({ unit }: TemplateProps) {
           <>
             <Divider />
             <SectionTitle>About</SectionTitle>
-            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{unit.about}</p>
+            <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{unit.about}</p>
           </>
         )}
 
@@ -105,17 +105,17 @@ export function MinimalTemplate({ unit }: TemplateProps) {
                 .map((e) => (
                   <div key={e.id}>
                     <div className="flex items-baseline justify-between gap-2">
-                      <p className="font-semibold text-gray-900 dark:text-gray-100">
+                      <p className="font-semibold text-slate-900 dark:text-slate-100">
                         {e.title}
                         {e.organization ? ` @ ${e.organization}` : ''}
                       </p>
-                      <p className="text-xs text-gray-400 dark:text-gray-500 shrink-0">
+                      <p className="text-xs text-slate-400 dark:text-slate-500 shrink-0">
                         {e.location && `${e.location} · `}
                         {formatDate(e.from_date)} – {formatDate(e.to_date)}
                       </p>
                     </div>
                     {e.description && (
-                      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
+                      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
                         {e.description}
                       </p>
                     )}
@@ -137,19 +137,19 @@ export function MinimalTemplate({ unit }: TemplateProps) {
                 .map((e) => (
                   <div key={e.id}>
                     <div className="flex items-baseline justify-between gap-2">
-                      <p className="font-semibold text-gray-900 dark:text-gray-100">{e.institution}</p>
-                      <p className="text-xs text-gray-400 dark:text-gray-500 shrink-0">
+                      <p className="font-semibold text-slate-900 dark:text-slate-100">{e.institution}</p>
+                      <p className="text-xs text-slate-400 dark:text-slate-500 shrink-0">
                         {formatDate(e.from_date)} – {formatDate(e.to_date)}
                       </p>
                     </div>
                     {e.degree && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
                         {e.degree}
                         {e.field_of_study ? `, ${e.field_of_study}` : ''}
                       </p>
                     )}
                     {e.description && (
-                      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">{e.description}</p>
+                      <p className="mt-1 text-sm text-slate-600 dark:text-slate-400">{e.description}</p>
                     )}
                   </div>
                 ))}
@@ -164,9 +164,9 @@ export function MinimalTemplate({ unit }: TemplateProps) {
             <SectionTitle>Skills</SectionTitle>
             <div className="space-y-2">
               {Object.entries(skillsByCategory).map(([cat, skills]) => (
-                <p key={cat} className="text-sm text-gray-700 dark:text-gray-300">
+                <p key={cat} className="text-sm text-slate-700 dark:text-slate-300">
                   {Object.keys(skillsByCategory).length > 1 && (
-                    <span className="font-semibold text-gray-900 dark:text-gray-100">{cat}: </span>
+                    <span className="font-semibold text-slate-900 dark:text-slate-100">{cat}: </span>
                   )}
                   {skills.map((s) => s.name).join(', ')}
                 </p>
@@ -180,7 +180,7 @@ export function MinimalTemplate({ unit }: TemplateProps) {
           <>
             <Divider />
             <SectionTitle>Languages</SectionTitle>
-            <p className="text-sm text-gray-700 dark:text-gray-300">
+            <p className="text-sm text-slate-700 dark:text-slate-300">
               {unit.languages.map((l) => `${l.name} (${l.level})`).join(' · ')}
             </p>
           </>
@@ -197,8 +197,8 @@ export function MinimalTemplate({ unit }: TemplateProps) {
                 .sort((a, b) => a.order - b.order)
                 .map((c, i) => (
                   <div key={i}>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{c.name}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{c.name}</p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
                       {c.issuing_organization}
                       {c.issue_date ? ` · ${formatDate(c.issue_date)}` : ''}
                     </p>
@@ -207,7 +207,7 @@ export function MinimalTemplate({ unit }: TemplateProps) {
                         href={c.credential_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-gray-900 dark:text-gray-100 underline underline-offset-2"
+                        className="text-sm text-slate-900 dark:text-slate-100 underline underline-offset-2"
                       >
                         View credential
                       </a>
@@ -230,16 +230,16 @@ export function MinimalTemplate({ unit }: TemplateProps) {
                 .map((a, i) => (
                   <div key={i}>
                     <div className="flex items-baseline justify-between gap-2">
-                      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{a.title}</p>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{a.title}</p>
                       {a.date && (
-                        <p className="text-xs text-gray-400 dark:text-gray-500 shrink-0">
+                        <p className="text-xs text-slate-400 dark:text-slate-500 shrink-0">
                           {formatDate(a.date)}
                         </p>
                       )}
                     </div>
-                    {a.issuer && <p className="text-sm text-gray-500 dark:text-gray-400">{a.issuer}</p>}
+                    {a.issuer && <p className="text-sm text-slate-500 dark:text-slate-400">{a.issuer}</p>}
                     {a.description && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{a.description}</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">{a.description}</p>
                     )}
                   </div>
                 ))}
@@ -258,12 +258,12 @@ export function MinimalTemplate({ unit }: TemplateProps) {
                 .sort((a, b) => a.order - b.order)
                 .map((p) => (
                   <div key={p.id}>
-                    <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                       {p.title}
                       {p.category ? ` — ${p.category}` : ''}
                     </p>
                     {p.description && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{p.description}</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">{p.description}</p>
                     )}
                     {p.links.length > 0 && (
                       <div className="flex gap-3 mt-1">
@@ -273,7 +273,7 @@ export function MinimalTemplate({ unit }: TemplateProps) {
                             href={l.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-sm text-gray-900 dark:text-gray-100 underline underline-offset-2"
+                            className="text-sm text-slate-900 dark:text-slate-100 underline underline-offset-2"
                           >
                             {l.name}
                           </a>
@@ -298,25 +298,25 @@ export function MinimalTemplate({ unit }: TemplateProps) {
                 .map((item, ii) => (
                   <div key={ii}>
                     <div className="flex items-baseline justify-between gap-2">
-                      <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">{item.title}</p>
+                      <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">{item.title}</p>
                       {(item.from_date || item.to_date) && (
-                        <p className="text-xs text-gray-400 dark:text-gray-500 shrink-0">
+                        <p className="text-xs text-slate-400 dark:text-slate-500 shrink-0">
                           {formatDate(item.from_date)} – {formatDate(item.to_date)}
                         </p>
                       )}
                     </div>
                     {item.subtitle && (
-                      <p className="text-sm text-gray-500 dark:text-gray-400">{item.subtitle}</p>
+                      <p className="text-sm text-slate-500 dark:text-slate-400">{item.subtitle}</p>
                     )}
                     {item.description && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400">{item.description}</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">{item.description}</p>
                     )}
                     {item.url && (
                       <a
                         href={item.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-sm text-gray-900 dark:text-gray-100 underline underline-offset-2"
+                        className="text-sm text-slate-900 dark:text-slate-100 underline underline-offset-2"
                       >
                         View
                       </a>

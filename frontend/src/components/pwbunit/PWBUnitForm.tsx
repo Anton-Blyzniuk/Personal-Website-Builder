@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useBlocker } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
   User,
@@ -6,6 +7,7 @@ import {
   GraduationCap,
   FolderOpen,
   Award,
+  BadgeCheck,
   Globe,
   Languages,
   Link2,
@@ -49,7 +51,7 @@ const tabs = [
   { id: 'experience', label: 'Experience', icon: <Briefcase className="h-4 w-4" /> },
   { id: 'education', label: 'Education', icon: <GraduationCap className="h-4 w-4" /> },
   { id: 'portfolio', label: 'Portfolio', icon: <FolderOpen className="h-4 w-4" /> },
-  { id: 'certifications', label: 'Certifications', icon: <Award className="h-4 w-4" /> },
+  { id: 'certifications', label: 'Certifications', icon: <BadgeCheck className="h-4 w-4" /> },
   { id: 'awards', label: 'Awards', icon: <Award className="h-4 w-4" /> },
   { id: 'languages', label: 'Languages', icon: <Languages className="h-4 w-4" /> },
   { id: 'links', label: 'Links', icon: <Link2 className="h-4 w-4" /> },
@@ -143,6 +145,36 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
     },
   });
 
+  const { isDirty } = form.formState;
+
+  const blocker = useBlocker(
+    ({ currentLocation, nextLocation }) =>
+      isDirty && currentLocation.pathname !== nextLocation.pathname
+  );
+
+  useEffect(() => {
+    if (blocker.state === 'blocked') {
+      if (window.confirm('You have unsaved changes. Leave without saving?')) {
+        blocker.proceed();
+      } else {
+        blocker.reset();
+      }
+    }
+  }, [blocker]);
+
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (isDirty) { e.preventDefault(); e.returnValue = ''; }
+    };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isDirty]);
+
+  const handleTabChange = (id: string) => {
+    setActiveTab(id);
+    document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   const handleSubmit = form.handleSubmit(async (data) => {
     const payload: PWBUnitUpdatePayload = {
       template: data.template,
@@ -224,7 +256,7 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
   return (
     <form onSubmit={handleSubmit}>
       {/* Sticky save bar */}
-      <div className="sticky top-0 z-10 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 px-0 py-3 flex items-center justify-between mb-2 -mx-1 px-1 transition-theme">
+      <div className="sticky top-0 z-10 bg-white dark:bg-slate-950 border-b border-slate-200 dark:border-slate-800 py-3 flex items-center justify-between mb-2 -mx-1 px-1 transition-theme">
         <div>
           <h2 className="text-sm font-semibold text-slate-900 dark:text-slate-100">
             {unit.first_name} {unit.last_name}
@@ -236,7 +268,7 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
         </Button>
       </div>
 
-      <Tabs tabs={tabs} active={activeTab} onChange={setActiveTab} />
+      <Tabs tabs={tabs} active={activeTab} onChange={handleTabChange} />
 
       <div className="pt-6">
         {activeTab === 'basic' && <BasicInfoSection form={form} />}
