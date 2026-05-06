@@ -37,7 +37,8 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
   const toast = useCallback(
     (type: ToastType, message: string) => {
       const id = Math.random().toString(36).slice(2);
-      setToasts((prev) => [...prev, { id, type, message }]);
+      const MAX_TOASTS = 3;
+      setToasts((prev) => [...prev, { id, type, message }].slice(-MAX_TOASTS));
       setTimeout(() => dismiss(id), 4500);
     },
     [dismiss],

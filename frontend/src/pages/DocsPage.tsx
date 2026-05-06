@@ -8,6 +8,7 @@ import { PublicLayout } from '../components/layout/PublicLayout';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { useAuthStore } from '../store/authStore';
 import { API_BASE_URL } from '../lib/env';
+import { CopyButton } from '../components/ui/CopyButton';
 
 // ─── AI docs snapshot ────────────────────────────────────────────────────────
 
@@ -219,25 +220,6 @@ function flattenAll(nav: NavItem[]): NavItem[] {
 
 type Lang = 'curl' | 'js' | 'python';
 
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      onClick={() => {
-        navigator.clipboard.writeText(text).then(() => {
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
-        });
-      }}
-      title="Copy"
-      className="absolute top-3 right-3 p-1.5 rounded-md bg-slate-700/60 hover:bg-slate-600 text-slate-400 hover:text-slate-200 transition-all duration-150 active:scale-90"
-    >
-      {copied
-        ? <Check className="h-3.5 w-3.5 text-green-400" />
-        : <Copy className="h-3.5 w-3.5" />}
-    </button>
-  );
-}
 
 function CodeBlock({ children }: { children: string }) {
   return (
@@ -245,7 +227,11 @@ function CodeBlock({ children }: { children: string }) {
       <pre className="bg-slate-900 dark:bg-slate-950 text-slate-300 rounded-xl p-4 pr-12 overflow-x-auto text-xs font-mono leading-relaxed border border-slate-700/50 dark:border-slate-800">
         <code>{children}</code>
       </pre>
-      <CopyButton text={children} />
+      <CopyButton
+        text={children}
+        className="absolute top-3 right-3 p-1.5 rounded-md bg-slate-700/60 hover:bg-slate-600 text-slate-400 hover:text-slate-200 transition-all duration-150 active:scale-90"
+        iconClassName="h-3.5 w-3.5"
+      />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Key, Copy, RotateCcw, Trash2, AlertTriangle, Check, Plus, ShieldCheck } from 'lucide-react';
+import { Key, RotateCcw, Trash2, AlertTriangle, Plus, ShieldCheck } from 'lucide-react';
 import { usersApi } from '../api/users';
 import { useToast } from '../hooks/useToast';
 import { extractErrorMessage } from '../lib/api';
@@ -8,25 +8,9 @@ import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { Button } from '../components/ui/Button';
 import { Card, CardHeader, CardTitle } from '../components/ui/Card';
 import { Modal } from '../components/ui/Modal';
+import { CopyButton } from '../components/ui/CopyButton';
 import { Badge } from '../components/ui/Badge';
 
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  const handle = async () => {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-  return (
-    <button
-      onClick={handle}
-      title="Copy"
-      className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 transition-all duration-150 active:scale-90"
-    >
-      {copied ? <Check className="h-4 w-4 text-green-400 animate-scale-in" /> : <Copy className="h-4 w-4" />}
-    </button>
-  );
-}
 
 function SecretBanner({ secret, onDismiss }: { secret: string; onDismiss: () => void }) {
   return (
@@ -40,7 +24,7 @@ function SecretBanner({ secret, onDismiss }: { secret: string; onDismiss: () => 
           </p>
           <div className="mt-3 font-mono text-sm bg-slate-900/80 border border-amber-500/20 rounded-lg px-4 py-3 flex items-center justify-between gap-2 break-all">
             <span className="text-amber-200 select-all">{secret}</span>
-            <CopyButton text={secret} />
+            <CopyButton text={secret} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 transition-all duration-150 active:scale-90" />
           </div>
           <button onClick={onDismiss} className="mt-3 text-xs text-amber-500/70 hover:text-amber-400 transition-colors">
             I've saved it — dismiss
@@ -130,7 +114,7 @@ export function ApiKeysPage() {
                   <label className="text-xs font-medium text-slate-500 dark:text-slate-500 uppercase tracking-wide">API Key</label>
                   <div className="mt-1.5 flex items-center gap-2 font-mono text-sm bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 rounded-lg px-3 py-2.5">
                     <span className="flex-1 text-slate-800 dark:text-slate-200 break-all select-all">{credential.key}</span>
-                    <CopyButton text={credential.key} />
+                    <CopyButton text={credential.key} className="p-1.5 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-700/50 transition-all duration-150 active:scale-90" />
                   </div>
                 </div>
                 <div>

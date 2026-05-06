@@ -44,6 +44,12 @@ export function ProfilePage() {
     if (profile) profileForm.reset({ first_name: profile.first_name, last_name: profile.last_name });
   }, [profile]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  useEffect(() => {
+    return () => {
+      if (avatarPreview) URL.revokeObjectURL(avatarPreview);
+    };
+  }, [avatarPreview]);
+
   const updateProfile = useMutation({
     mutationFn: (data: ProfileForm) => usersApi.updateProfile(data),
     onSuccess: (u) => { setUser(u); success('Profile updated'); },

@@ -283,11 +283,11 @@ export function PWBUnitImportPage() {
     <DashboardLayout>
       <div className="page-enter max-w-3xl">
         <button
-          onClick={() => navigate('/dashboard/pwbunits/new')}
+          onClick={() => navigate(-1)}
           className="inline-flex items-center gap-2 text-sm text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 mb-6 transition-colors group"
         >
           <ArrowLeft className="h-4 w-4 group-hover:-translate-x-0.5 transition-transform duration-150" />
-          Back to create
+          Back
         </button>
 
         <div className="flex items-center gap-3 mb-2">

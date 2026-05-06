@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { clsx } from 'clsx';
 
@@ -13,11 +13,19 @@ interface ModalProps {
 const sizes = { sm: 'max-w-md', md: 'max-w-xl', lg: 'max-w-3xl' };
 
 export function Modal({ open, onClose, title, children, size = 'md' }: ModalProps) {
+  const panelRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
+    if (!open) return;
+    document.body.style.overflow = 'hidden';
     const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     document.addEventListener('keydown', handler);
-    return () => document.removeEventListener('keydown', handler);
-  }, [onClose]);
+    setTimeout(() => panelRef.current?.focus(), 0);
+    return () => {
+      document.body.style.overflow = '';
+      document.removeEventListener('keydown', handler);
+    };
+  }, [open, onClose]);
 
   if (!open) return null;
 
@@ -30,8 +38,10 @@ export function Modal({ open, onClose, title, children, size = 'md' }: ModalProp
       />
       {/* Panel */}
       <div
+        ref={panelRef}
+        tabIndex={-1}
         className={clsx(
-          'relative w-full overflow-hidden rounded-2xl shadow-2xl animate-scale-in',
+          'relative w-full overflow-hidden rounded-2xl shadow-2xl animate-scale-in outline-none',
           'bg-white dark:bg-slate-900',
           'border border-slate-200/50 dark:border-slate-700/50',
           sizes[size],
