@@ -1,26 +1,34 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Plus, Pencil, Trash2, ExternalLink, LayoutGrid, Share2 } from 'lucide-react';
+import { Plus, Pencil, Trash2, ExternalLink, LayoutGrid, Share2, Lock } from 'lucide-react';
 import { pwbUnitsApi } from '../api/pwbunits';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import { PageSpinner } from '../components/ui/Spinner';
 import { useToast } from '../hooks/useToast';
+import { useAuthStore } from '../store/authStore';
 import { extractErrorMessage } from '../lib/api';
 import { API_BASE_URL } from '../lib/env';
+import { PLAN_LIMITS } from '../types/api';
 import type { PWBUnitListItem } from '../types/api';
 
 export function DashboardPage() {
   const { success, error: toastError } = useToast();
   const queryClient = useQueryClient();
   const [deleteTarget, setDeleteTarget] = useState<PWBUnitListItem | null>(null);
+  const { user } = useAuthStore();
 
   const { data, isLoading } = useQuery({
     queryKey: ['pwbunits'],
     queryFn: () => pwbUnitsApi.list(),
   });
+
+  const plan = user?.plan ?? 'free';
+  const limit = PLAN_LIMITS[plan];
+  const count = data?.results.length ?? 0;
+  const atLimit = limit !== null && count >= limit;
 
   const deleteMutation = useMutation({
     mutationFn: (unitName: string) => pwbUnitsApi.delete(unitName),
@@ -41,9 +49,18 @@ export function DashboardPage() {
             <h1 className="text-2xl font-bold text-slate-900 dark:text-white">My PWBUnits</h1>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-500">Manage your personal website profiles</p>
           </div>
-          <Link to="/dashboard/pwbunits/new">
-            <Button icon={<Plus className="h-4 w-4" />}>New PWBUnit</Button>
-          </Link>
+          {atLimit ? (
+            <div className="flex flex-col items-end gap-1">
+              <Button icon={<Lock className="h-4 w-4" />} disabled>New PWBUnit</Button>
+              <Link to="/dashboard/plans" className="text-xs text-primary-400 hover:text-primary-300 transition-colors">
+                Plan limit reached — upgrade →
+              </Link>
+            </div>
+          ) : (
+            <Link to="/dashboard/pwbunits/new">
+              <Button icon={<Plus className="h-4 w-4" />}>New PWBUnit</Button>
+            </Link>
+          )}
         </div>
 
         {isLoading ? (
@@ -58,9 +75,18 @@ export function DashboardPage() {
             <p className="text-slate-500 dark:text-slate-500 text-sm mb-6 max-w-xs">
               Create your first PWBUnit to start building your professional profile.
             </p>
-            <Link to="/dashboard/pwbunits/new">
-              <Button icon={<Plus className="h-4 w-4" />}>Create PWBUnit</Button>
-            </Link>
+            {atLimit ? (
+              <>
+                <Button icon={<Lock className="h-4 w-4" />} disabled>Create PWBUnit</Button>
+                <Link to="/dashboard/plans" className="text-sm text-primary-400 hover:text-primary-300 transition-colors mt-1">
+                  Upgrade your plan →
+                </Link>
+              </>
+            ) : (
+              <Link to="/dashboard/pwbunits/new">
+                <Button icon={<Plus className="h-4 w-4" />}>Create PWBUnit</Button>
+              </Link>
+            )}
           </div>
         ) : (
           <div className="space-y-3 stagger-children">

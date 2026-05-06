@@ -15,6 +15,7 @@ import { PWBUnitEditPage } from './pages/PWBUnitEditPage';
 import { ApiKeysPage } from './pages/ApiKeysPage';
 import { DocsPage } from './pages/DocsPage';
 import { PWBUnitImportPage } from './pages/PWBUnitImportPage';
+import { PlansPage } from './pages/PlansPage';
 import { CVPage } from './pages/CVPage';
 
 const queryClient = new QueryClient({
@@ -53,6 +54,7 @@ function AnimatedRoutes() {
         <Route path="/dashboard/pwbunits/new" element={<PWBUnitCreatePage />} />
         <Route path="/dashboard/pwbunits/import" element={<PWBUnitImportPage />} />
         <Route path="/dashboard/pwbunits/:unit_name/edit" element={<PWBUnitEditPage />} />
+        <Route path="/dashboard/plans" element={<PlansPage />} />
         <Route path="/dashboard/api-keys" element={<ApiKeysPage />} />
       </Route>
 

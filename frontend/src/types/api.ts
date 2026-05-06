@@ -27,6 +27,13 @@ export const PLAN_LABELS: Record<UserPlan, string> = {
   owner: 'Owner',
 };
 
+export const PLAN_BADGE_COLORS: Record<UserPlan, string> = {
+  free:     'bg-slate-700/40 text-slate-300 border-slate-600/30',
+  pro:      'bg-blue-500/20 text-blue-300 border-blue-500/30',
+  pro_plus: 'bg-violet-500/20 text-violet-300 border-violet-500/30',
+  owner:    'bg-amber-500/20 text-amber-300 border-amber-500/30',
+};
+
 export interface UserProfile {
   email: string;
   first_name: string;
