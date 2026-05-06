@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { useBlocker } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import {
   User,
@@ -146,21 +145,6 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
   });
 
   const { isDirty } = form.formState;
-
-  const blocker = useBlocker(
-    ({ currentLocation, nextLocation }) =>
-      isDirty && currentLocation.pathname !== nextLocation.pathname
-  );
-
-  useEffect(() => {
-    if (blocker.state === 'blocked') {
-      if (window.confirm('You have unsaved changes. Leave without saving?')) {
-        blocker.proceed();
-      } else {
-        blocker.reset();
-      }
-    }
-  }, [blocker]);
 
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
