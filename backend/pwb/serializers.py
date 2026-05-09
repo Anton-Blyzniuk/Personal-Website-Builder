@@ -69,10 +69,15 @@ class PortfolioItemSerializer(serializers.ModelSerializer):
 
 
 class CertificationSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = Certification
-        fields = ["name", "issuing_organization", "issue_date", "expiry_date",
-                  "credential_id", "credential_url", "order"]
+        fields = ["id", "name", "issuing_organization", "issue_date", "expiry_date",
+                  "credential_id", "credential_url", "image", "order"]
+
+    def get_image(self, obj):
+        return obj.image.url if obj.image else None
 
 
 class AwardSerializer(serializers.ModelSerializer):
