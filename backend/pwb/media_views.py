@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import EducationUnit, Photo, PortfolioItem, PWBUnit
+from .models import Certification, EducationUnit, Photo, PortfolioItem, PWBUnit
 from .serializers import PhotoSerializer
 
 _ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp", "image/gif"}
@@ -254,4 +254,54 @@ class PortfolioItemImageView(_OwnedUnitMixin, APIView):
         item = self._get_portfolio_item(unit_name, pk)
         item.image = None
         item.save(update_fields=["image"])
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+# ---------------------------------------------------------------------------
+# Certification image
+# ---------------------------------------------------------------------------
+
+class CertificationImageView(_OwnedUnitMixin, APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]
+
+    def _get_certification(self, unit_name, pk):
+        pwb_unit = self._get_owned_unit(unit_name)
+        return get_object_or_404(Certification, pk=pk, pwb_unit=pwb_unit)
+
+    @extend_schema(
+        summary="Upload certification image",
+        description="Upload or replace the image for a specific Certification.",
+        responses={
+            200: OpenApiResponse(description="Returns updated image URL"),
+            400: OpenApiResponse(description="No file or unsupported format"),
+            403: OpenApiResponse(description="Not the owner"),
+        },
+        tags=["media"],
+    )
+    def post(self, request, unit_name, pk):
+        cert = self._get_certification(unit_name, pk)
+
+        image_file = request.FILES.get("image")
+        if not image_file:
+            return Response({"image": "This field is required."}, status=status.HTTP_400_BAD_REQUEST)
+        if image_file.content_type not in _ALLOWED_IMAGE_TYPES:
+            return Response(
+                {"image": "Unsupported format. Use JPEG, PNG, WebP or GIF."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        cert.image = image_file
+        cert.save(update_fields=["image"])
+        return Response({"image": cert.image.url if cert.image else None})
+
+    @extend_schema(
+        summary="Remove certification image",
+        responses={204: None, 403: OpenApiResponse(description="Not the owner")},
+        tags=["media"],
+    )
+    def delete(self, request, unit_name, pk):
+        cert = self._get_certification(unit_name, pk)
+        cert.image = None
+        cert.save(update_fields=["image"])
         return Response(status=status.HTTP_204_NO_CONTENT)

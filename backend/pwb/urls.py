@@ -1,8 +1,8 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .media_views import (EducationUnitImageView, PDFResumeView,
-                           PhotoDetailView, PhotoListCreateView,
+from .media_views import (CertificationImageView, EducationUnitImageView,
+                           PDFResumeView, PhotoDetailView, PhotoListCreateView,
                            PortfolioItemImageView)
 from .views import PWBUnitViewSet, ping
 
@@ -30,4 +30,8 @@ urlpatterns = [
     # Portfolio item image
     path("pwbunits/<slug:unit_name>/portfolio-items/<int:pk>/image/",
          PortfolioItemImageView.as_view(), name="portfolio-item-image"),
+
+    # Certification image
+    path("pwbunits/<slug:unit_name>/certifications/<int:pk>/image/",
+         CertificationImageView.as_view(), name="certification-image"),
 ]

@@ -195,6 +195,19 @@ class Certification(models.Model):
     expiry_date          = models.DateField(blank=True, null=True)
     credential_id        = models.CharField(max_length=100, blank=True, null=True)
     credential_url       = models.URLField(blank=True, null=True)
+    image                = CloudinaryField(
+        "image",
+        blank=True,
+        null=True,
+        folder="pwb_certification_images",
+        transformation={
+            "quality": "auto",
+            "fetch_format": "auto",
+            "width": 400,
+            "height": 400,
+            "crop": "limit",
+        },
+    )
     order                = models.PositiveSmallIntegerField(default=0)
     pwb_unit             = models.ForeignKey(PWBUnit, on_delete=models.CASCADE, related_name="certifications")
 

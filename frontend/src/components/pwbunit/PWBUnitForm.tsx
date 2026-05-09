@@ -29,13 +29,15 @@ import { AwardsSection } from './sections/AwardsSection';
 import { CustomSectionsSection } from './sections/CustomSectionsSection';
 import { PhotosSection } from './sections/PhotosSection';
 import { TemplateSection } from './sections/TemplateSection';
-import type { PWBUnit, PWBUnitUpdatePayload } from '../../types/api';
+import type { PWBUnit, PWBUnitUpdatePayload, PortfolioItemWrite, CertificationWrite } from '../../types/api';
 
-export type PWBUnitFormData = PWBUnitUpdatePayload & {
+export type PWBUnitFormData = Omit<PWBUnitUpdatePayload, 'portfolio_items' | 'certifications'> & {
   first_name: string;
   last_name: string;
   headline: string;
   email: string;
+  portfolio_items: Array<PortfolioItemWrite & { _id?: number; _image?: string | null }>;
+  certifications: Array<CertificationWrite & { _id?: number; _image?: string | null }>;
 };
 
 interface PWBUnitFormProps {
@@ -64,85 +66,98 @@ function nullify<T>(val: T | '' | undefined): T | null {
   return val ?? null;
 }
 
+function buildDefaultValues(unit: PWBUnit): PWBUnitFormData {
+  return {
+    first_name: unit.first_name,
+    last_name: unit.last_name,
+    headline: unit.headline,
+    email: unit.email,
+    phone: unit.phone ?? '',
+    location: unit.location ?? '',
+    about: unit.about ?? '',
+    skills: unit.skills.map((s) => ({
+      name: s.name,
+      category: s.category ?? '',
+      level: s.level,
+      order: s.order,
+    })),
+    links: unit.links,
+    languages: unit.languages,
+    experience_units: unit.experience_units.map((e) => ({
+      title: e.title,
+      organization: e.organization ?? '',
+      location: e.location ?? '',
+      description: e.description ?? '',
+      from_date: e.from_date,
+      to_date: e.to_date ?? '',
+      order: e.order,
+    })),
+    education_units: unit.education_units.map((e) => ({
+      institution: e.institution,
+      degree: e.degree ?? '',
+      field_of_study: e.field_of_study ?? '',
+      location: e.location ?? '',
+      from_date: e.from_date,
+      to_date: e.to_date ?? '',
+      description: e.description ?? '',
+      order: e.order,
+    })),
+    portfolio_items: unit.portfolio_items.map((p) => ({
+      _id: p.id,
+      _image: p.image ?? null,
+      title: p.title,
+      category: p.category ?? '',
+      description: p.description ?? '',
+      date: p.date ?? '',
+      order: p.order,
+      links: p.links,
+    })),
+    certifications: unit.certifications.map((c) => ({
+      _id: c.id,
+      _image: c.image ?? null,
+      name: c.name,
+      issuing_organization: c.issuing_organization,
+      issue_date: c.issue_date ?? '',
+      expiry_date: c.expiry_date ?? '',
+      credential_id: c.credential_id ?? '',
+      credential_url: c.credential_url ?? '',
+      order: c.order,
+    })),
+    awards: unit.awards.map((a) => ({
+      title: a.title,
+      issuer: a.issuer ?? '',
+      date: a.date ?? '',
+      description: a.description ?? '',
+      order: a.order,
+    })),
+    template: unit.template ?? 'classic',
+    custom_sections: unit.custom_sections.map((cs) => ({
+      title: cs.title,
+      order: cs.order,
+      items: cs.items.map((i) => ({
+        title: i.title,
+        subtitle: i.subtitle ?? '',
+        from_date: i.from_date ?? '',
+        to_date: i.to_date ?? '',
+        description: i.description ?? '',
+        url: i.url ?? '',
+        order: i.order,
+      })),
+    })),
+  };
+}
+
 export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
   const [activeTab, setActiveTab] = useState('basic');
 
   const form = useForm<PWBUnitFormData>({
-    defaultValues: {
-      first_name: unit.first_name,
-      last_name: unit.last_name,
-      headline: unit.headline,
-      email: unit.email,
-      phone: unit.phone ?? '',
-      location: unit.location ?? '',
-      about: unit.about ?? '',
-      skills: unit.skills.map((s) => ({
-        name: s.name,
-        category: s.category ?? '',
-        level: s.level,
-        order: s.order,
-      })),
-      links: unit.links,
-      languages: unit.languages,
-      experience_units: unit.experience_units.map((e) => ({
-        title: e.title,
-        organization: e.organization ?? '',
-        location: e.location ?? '',
-        description: e.description ?? '',
-        from_date: e.from_date,
-        to_date: e.to_date ?? '',
-        order: e.order,
-      })),
-      education_units: unit.education_units.map((e) => ({
-        institution: e.institution,
-        degree: e.degree ?? '',
-        field_of_study: e.field_of_study ?? '',
-        location: e.location ?? '',
-        from_date: e.from_date,
-        to_date: e.to_date ?? '',
-        description: e.description ?? '',
-        order: e.order,
-      })),
-      portfolio_items: unit.portfolio_items.map((p) => ({
-        title: p.title,
-        category: p.category ?? '',
-        description: p.description ?? '',
-        date: p.date ?? '',
-        order: p.order,
-        links: p.links,
-      })),
-      certifications: unit.certifications.map((c) => ({
-        name: c.name,
-        issuing_organization: c.issuing_organization,
-        issue_date: c.issue_date ?? '',
-        expiry_date: c.expiry_date ?? '',
-        credential_id: c.credential_id ?? '',
-        credential_url: c.credential_url ?? '',
-        order: c.order,
-      })),
-      awards: unit.awards.map((a) => ({
-        title: a.title,
-        issuer: a.issuer ?? '',
-        date: a.date ?? '',
-        description: a.description ?? '',
-        order: a.order,
-      })),
-      template: unit.template ?? 'classic',
-      custom_sections: unit.custom_sections.map((cs) => ({
-        title: cs.title,
-        order: cs.order,
-        items: cs.items.map((i) => ({
-          title: i.title,
-          subtitle: i.subtitle ?? '',
-          from_date: i.from_date ?? '',
-          to_date: i.to_date ?? '',
-          description: i.description ?? '',
-          url: i.url ?? '',
-          order: i.order,
-        })),
-      })),
-    },
+    defaultValues: buildDefaultValues(unit),
   });
+
+  useEffect(() => {
+    form.reset(buildDefaultValues(unit));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [unit]);
 
   const { isDirty } = form.formState;
 
@@ -259,8 +274,8 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
         {activeTab === 'skills' && <SkillsSection form={form} />}
         {activeTab === 'experience' && <ExperienceSection form={form} />}
         {activeTab === 'education' && <EducationSection form={form} />}
-        {activeTab === 'portfolio' && <PortfolioSection form={form} />}
-        {activeTab === 'certifications' && <CertificationsSection form={form} />}
+        {activeTab === 'portfolio' && <PortfolioSection form={form} unitName={unit.unit_name} />}
+        {activeTab === 'certifications' && <CertificationsSection form={form} unitName={unit.unit_name} />}
         {activeTab === 'awards' && <AwardsSection form={form} />}
         {activeTab === 'languages' && <LanguagesSection form={form} />}
         {activeTab === 'links' && <LinksSection form={form} />}

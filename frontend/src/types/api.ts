@@ -174,7 +174,8 @@ export interface PortfolioItem extends PortfolioItemWrite {
 }
 
 export interface Certification extends CertificationWrite {
-  // same shape
+  id: number;
+  image: string | null;
 }
 
 export interface Award extends AwardWrite {

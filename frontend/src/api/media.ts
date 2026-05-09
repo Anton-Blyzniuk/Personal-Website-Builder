@@ -70,4 +70,21 @@ export const mediaApi = {
     apiClient
       .delete(`/pwbunits/${unitName}/portfolio-items/${itemId}/image/`)
       .then((r) => r.data),
+
+  uploadCertificationImage: (unitName: string, certId: number, file: File) => {
+    const form = new FormData();
+    form.append('image', file);
+    return apiClient
+      .post<{ image: string }>(
+        `/pwbunits/${unitName}/certifications/${certId}/image/`,
+        form,
+        { headers: { 'Content-Type': 'multipart/form-data' } }
+      )
+      .then((r) => r.data);
+  },
+
+  deleteCertificationImage: (unitName: string, certId: number) =>
+    apiClient
+      .delete(`/pwbunits/${unitName}/certifications/${certId}/image/`)
+      .then((r) => r.data),
 };
