@@ -384,7 +384,7 @@ export function LandingPage() {
 
           <div className="grid sm:grid-cols-3 gap-10 relative">
             {/* Connector line — desktop only, sits behind the icons */}
-            <div className="hidden sm:block absolute top-10 left-[calc(16.67%+2.5rem)] right-[calc(16.67%+2.5rem)] h-px bg-gradient-to-r from-primary-400/40 via-violet-400/50 to-cyan-400/40" />
+            <div className="hidden sm:block absolute top-10 left-20 right-[calc((100%-5rem)/3)] h-px bg-gradient-to-r from-primary-400/40 via-violet-400/50 to-cyan-400/40" />
 
             {steps.map((s, i) => (
               <div key={s.title} className="flex flex-col items-center sm:items-start text-center sm:text-left">
