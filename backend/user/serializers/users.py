@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema_field
 from rest_framework import serializers
 from user.models import User
 
@@ -19,6 +20,7 @@ class UserRetrieveSerializer(serializers.ModelSerializer):
             "plan",
         )
 
+    @extend_schema_field(serializers.CharField(allow_null=True))
     def get_profile_picture(self, obj):
         if obj.profile_picture:
             return obj.profile_picture.url

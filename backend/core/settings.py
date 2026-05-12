@@ -143,6 +143,14 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "COMPONENT_SPLIT_REQUEST": True,
+    "ENUM_NAME_OVERRIDES": {
+        "SkillLevelEnum": ["Beginner", "Intermediate", "Advanced", "Expert"],
+        "LanguageLevelEnum": [
+            "A1 Begginer", "A2 Elementary", "B1 Intermediate",
+            "B2 Upper-Intermediate", "C1 Advanced", "C2 Advanced Proficy",
+            "Native", "Bilingual",
+        ],
+    },
 }
 
 SIMPLE_JWT = {
