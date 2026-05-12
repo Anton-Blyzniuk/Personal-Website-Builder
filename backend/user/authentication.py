@@ -1,8 +1,22 @@
 from django.contrib.auth.hashers import check_password
+from drf_spectacular.extensions import OpenApiAuthenticationExtension
 from rest_framework.authentication import BaseAuthentication
 from rest_framework.exceptions import AuthenticationFailed
 
 from .models import APICredential
+
+
+class APIKeyAuthenticationScheme(OpenApiAuthenticationExtension):
+    target_class = "user.authentication.APIKeyAuthentication"
+    name = "ApiKeyAuth"
+
+    def get_security_definition(self, auto_schema):
+        return {
+            "type": "apiKey",
+            "in": "header",
+            "name": "X-Api-Key",
+            "description": "Pass both X-Api-Key and X-Api-Secret headers.",
+        }
 
 
 class APIKeyAuthentication(BaseAuthentication):
