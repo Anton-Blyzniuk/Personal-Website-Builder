@@ -105,6 +105,7 @@ export interface EducationUnitWrite {
 }
 
 export interface PortfolioItemWrite {
+  id?: number;
   title: string;
   category: string | null;
   description: string | null;
@@ -114,6 +115,7 @@ export interface PortfolioItemWrite {
 }
 
 export interface CertificationWrite {
+  id?: number;
   name: string;
   issuing_organization: string;
   issue_date: string | null;
