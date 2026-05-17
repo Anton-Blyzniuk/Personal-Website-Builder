@@ -212,6 +212,7 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
         order: i,
       })),
       portfolio_items: (data.portfolio_items ?? []).map((p, i) => ({
+        ...(p._id !== undefined ? { id: p._id } : {}),
         title: p.title,
         category: nullify(p.category as string),
         description: nullify(p.description as string),
@@ -220,6 +221,7 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
         links: p.links ?? [],
       })),
       certifications: (data.certifications ?? []).map((c, i) => ({
+        ...(c._id !== undefined ? { id: c._id } : {}),
         name: c.name,
         issuing_organization: c.issuing_organization,
         issue_date: nullify(c.issue_date as string),
