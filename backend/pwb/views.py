@@ -107,7 +107,9 @@ class PWBUnitViewSet(
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         is_owner = request.user.is_authenticated and instance.owner == request.user
-        if not is_owner:
+        # Only count authenticated non-owner callers as API reads.
+        # Anonymous web visitors are tracked separately by the CV page via /track/.
+        if request.user.is_authenticated and not is_owner:
             from .analytics_views import record_view
             record_view(instance, request, source='api')
         serializer = self.get_serializer(instance)

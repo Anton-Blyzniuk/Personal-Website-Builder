@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell, Legend,
 } from 'recharts';
-import { BarChart2, Globe, Monitor, Smartphone, Tablet, Bot, TrendingUp, Users, Eye, Zap } from 'lucide-react';
+import { BarChart2, Globe, Monitor, Smartphone, Tablet, Bot, TrendingUp, Users, Eye, Zap, RefreshCw } from 'lucide-react';
 import { analyticsApi } from '../api/analytics';
 import { pwbUnitsApi } from '../api/pwbunits';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
@@ -349,6 +349,8 @@ const PERIODS = [
 export function AnalyticsPage() {
   const [selectedUnit, setSelectedUnit] = useState<string>('');
   const [period, setPeriod] = useState(30);
+  const [refreshing, setRefreshing] = useState(false);
+  const queryClient = useQueryClient();
 
   const { data: unitsData, isLoading: unitsLoading } = useQuery({
     queryKey: ['pwbunits'],
@@ -364,6 +366,12 @@ export function AnalyticsPage() {
     }
   }, [units, selectedUnit]);
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await queryClient.invalidateQueries({ queryKey: ['analytics', selectedUnit, period] });
+    setRefreshing(false);
+  };
+
   return (
     <DashboardLayout>
       <div className="page-enter space-y-6">
@@ -377,6 +385,19 @@ export function AnalyticsPage() {
           {/* Controls */}
           {units.length > 0 && (
             <div className="flex items-center gap-2 flex-wrap">
+              {/* Refresh */}
+              <button
+                onClick={handleRefresh}
+                disabled={refreshing || !selectedUnit}
+                className="flex items-center gap-1.5 px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-700
+                  bg-white dark:bg-slate-900 text-slate-500 dark:text-slate-400
+                  hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-700 dark:hover:text-slate-300
+                  disabled:opacity-40 transition-colors"
+                title="Refresh data"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">Refresh</span>
+              </button>
               {/* Unit selector */}
               {units.length > 1 && (
                 <select
