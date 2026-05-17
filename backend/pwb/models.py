@@ -163,11 +163,8 @@ class PortfolioItem(models.Model):
         null=True,
         folder="pwb_project_images",
         transformation={
-            "quality": "auto",
+            "quality": "auto:best",
             "fetch_format": "auto",
-            "width": 1200,
-            "height": 1200,
-            "crop": "limit",
         },
     )
     order    = models.PositiveSmallIntegerField(default=0)
@@ -202,11 +199,8 @@ class Certification(models.Model):
         null=True,
         folder="pwb_certification_images",
         transformation={
-            "quality": "auto",
+            "quality": "auto:best",
             "fetch_format": "auto",
-            "width": 400,
-            "height": 400,
-            "crop": "limit",
         },
     )
     order                = models.PositiveSmallIntegerField(default=0)
