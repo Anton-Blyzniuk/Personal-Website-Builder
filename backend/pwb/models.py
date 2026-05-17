@@ -2,6 +2,7 @@ from cloudinary.models import CloudinaryField
 from django.core.exceptions import ValidationError
 from django.db import models, transaction
 from django.db.models import F, Q
+from django.utils import timezone
 from user.models import User
 
 
@@ -296,6 +297,26 @@ class Photo(models.Model):
                 super().save(*args, **kwargs)
         else:
             super().save(*args, **kwargs)
+
+
+class PWBUnitView(models.Model):
+    SOURCE_WEB = 'web'
+    SOURCE_API = 'api'
+    SOURCE_CHOICES = [(SOURCE_WEB, 'Web'), (SOURCE_API, 'API')]
+
+    pwb_unit    = models.ForeignKey(PWBUnit, on_delete=models.CASCADE, related_name='views')
+    timestamp   = models.DateTimeField(default=timezone.now)
+    source      = models.CharField(max_length=10, choices=SOURCE_CHOICES)
+    ip_hash     = models.CharField(max_length=64, blank=True)
+    device_type = models.CharField(max_length=10, blank=True)
+    referrer    = models.CharField(max_length=100, blank=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['pwb_unit', 'timestamp'], name='pwb_view_unit_time_idx'),
+            models.Index(fields=['pwb_unit', 'source'],    name='pwb_view_unit_src_idx'),
+        ]
 
     def __str__(self):
         return f"photo -> {self.pwb_unit.unit_name}"

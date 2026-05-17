@@ -1,6 +1,7 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
+from .analytics_views import AnalyticsAPIView, TrackViewAPIView
 from .media_views import (CertificationImageView, EducationUnitImageView,
                            PDFResumeView, PhotoDetailView, PhotoListCreateView,
                            PortfolioItemImageView)
@@ -34,4 +35,10 @@ urlpatterns = [
     # Certification image
     path("pwbunits/<slug:unit_name>/certifications/<int:pk>/image/",
          CertificationImageView.as_view(), name="certification-image"),
+
+    # Analytics
+    path("pwbunits/<slug:unit_name>/track/",
+         TrackViewAPIView.as_view(), name="pwbunit-track"),
+    path("pwbunits/<slug:unit_name>/analytics/",
+         AnalyticsAPIView.as_view(), name="pwbunit-analytics"),
 ]

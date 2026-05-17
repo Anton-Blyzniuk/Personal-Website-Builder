@@ -258,6 +258,33 @@ export interface PWBUnitCreatePayload {
 
 export type PWBUnitUpdatePayload = Omit<Partial<PWBUnitCreatePayload>, 'unit_name'>;
 
+// ─── Analytics ───────────────────────────────────────────────────────────────
+
+export interface AnalyticsDayEntry {
+  date: string;
+  total: number;
+  web: number;
+  api: number;
+}
+
+export interface AnalyticsReferrer {
+  referrer: string;
+  count: number;
+}
+
+export interface AnalyticsData {
+  total_views: number;
+  unique_visitors: number;
+  web_views: number;
+  api_views: number;
+  all_time_total: number;
+  period_days: number;
+  views_over_time: AnalyticsDayEntry[];
+  by_source: { web: number; api: number };
+  by_device: Record<string, number>;
+  top_referrers: AnalyticsReferrer[];
+}
+
 // ─── Pagination ──────────────────────────────────────────────────────────────
 
 export interface PaginatedResponse<T> {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
-import { LayoutGrid, Key, BookOpen, LogOut, Menu, X, ChevronRight, Layers } from 'lucide-react';
+import { LayoutGrid, Key, BookOpen, LogOut, Menu, X, ChevronRight, Layers, BarChart2 } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useAuthStore } from '../../store/authStore';
 import { ThemeToggle } from '../ui/ThemeToggle';
@@ -10,10 +10,11 @@ import { PLAN_LABELS, PLAN_BADGE_COLORS } from '../../types/api';
 interface NavItem { to: string; icon: React.ReactNode; label: string; }
 
 const navItems: NavItem[] = [
-  { to: '/dashboard',          icon: <LayoutGrid className="h-4 w-4" />, label: 'My PWBUnits'    },
-  { to: '/dashboard/plans',    icon: <Layers     className="h-4 w-4" />, label: 'Plans'           },
-  { to: '/dashboard/api-keys', icon: <Key        className="h-4 w-4" />, label: 'API Credentials' },
-  { to: '/docs',               icon: <BookOpen   className="h-4 w-4" />, label: 'API Docs'        },
+  { to: '/dashboard',             icon: <LayoutGrid className="h-4 w-4" />, label: 'My PWBUnits'    },
+  { to: '/dashboard/analytics',   icon: <BarChart2  className="h-4 w-4" />, label: 'Analytics'      },
+  { to: '/dashboard/plans',       icon: <Layers     className="h-4 w-4" />, label: 'Plans'           },
+  { to: '/dashboard/api-keys',    icon: <Key        className="h-4 w-4" />, label: 'API Credentials' },
+  { to: '/docs',                  icon: <BookOpen   className="h-4 w-4" />, label: 'API Docs'        },
 ];
 
 
