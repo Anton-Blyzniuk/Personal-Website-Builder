@@ -9,7 +9,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from user.models import User
+from user.models import APICredential, User
 from .models import CustomSection, PortfolioItem, PWBUnit
 from .permissions import IsOwner
 from .serializers import (PWBUnitCreateSerializer, PWBUnitListSerializer,
@@ -106,10 +106,10 @@ class PWBUnitViewSet(
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
-        is_owner = request.user.is_authenticated and instance.owner == request.user
-        # Only count authenticated non-owner callers as API reads.
-        # Anonymous web visitors are tracked separately by the CV page via /track/.
-        if request.user.is_authenticated and not is_owner:
+        # Track only requests authenticated via API key (X-Api-Key/X-Api-Secret).
+        # Web dashboard calls use JWT — those are NOT counted here.
+        # Anonymous web visitors are tracked by CVPage via POST /track/.
+        if isinstance(request.auth, APICredential):
             from .analytics_views import record_view
             record_view(instance, request, source='api')
         serializer = self.get_serializer(instance)
