@@ -323,7 +323,7 @@ def _save_portfolio_items(pwb_unit, items_data):
             if item:
                 for attr, val in item_data.items():
                     setattr(item, attr, val)
-                item.save()
+                item.save(update_fields=list(item_data.keys()))
             else:
                 item = PortfolioItem.objects.create(pwb_unit=pwb_unit, **item_data)
         else:
@@ -345,7 +345,7 @@ def _save_certifications(pwb_unit, certs_data):
             if cert:
                 for attr, val in cert_data.items():
                     setattr(cert, attr, val)
-                cert.save()
+                cert.save(update_fields=list(cert_data.keys()))
             else:
                 Certification.objects.create(pwb_unit=pwb_unit, **cert_data)
         else:

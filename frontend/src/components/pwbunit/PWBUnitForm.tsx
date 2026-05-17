@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   User,
@@ -29,6 +29,7 @@ import { AwardsSection } from './sections/AwardsSection';
 import { CustomSectionsSection } from './sections/CustomSectionsSection';
 import { PhotosSection } from './sections/PhotosSection';
 import { TemplateSection } from './sections/TemplateSection';
+import { mediaApi } from '../../api/media';
 import type { PWBUnit, PWBUnitUpdatePayload, PortfolioItemWrite, CertificationWrite } from '../../types/api';
 
 export type PWBUnitFormData = Omit<PWBUnitUpdatePayload, 'portfolio_items' | 'certifications'> & {
@@ -149,13 +150,26 @@ function buildDefaultValues(unit: PWBUnit): PWBUnitFormData {
 
 export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
   const [activeTab, setActiveTab] = useState('basic');
+  const pendingCertImages = useRef<Map<number, File>>(new Map());
 
   const form = useForm<PWBUnitFormData>({
     defaultValues: buildDefaultValues(unit),
   });
 
   useEffect(() => {
+    const pending = new Map(pendingCertImages.current);
+    pendingCertImages.current.clear();
     form.reset(buildDefaultValues(unit));
+    if (pending.size > 0) {
+      pending.forEach((file, index) => {
+        const certId = unit.certifications[index]?.id;
+        if (certId) {
+          mediaApi.uploadCertificationImage(unit.unit_name, certId, file)
+            .then((res) => form.setValue(`certifications.${index}._image`, res.image, { shouldDirty: false }))
+            .catch(() => {});
+        }
+      });
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unit]);
 
@@ -277,7 +291,16 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
         {activeTab === 'experience' && <ExperienceSection form={form} />}
         {activeTab === 'education' && <EducationSection form={form} />}
         {activeTab === 'portfolio' && <PortfolioSection form={form} unitName={unit.unit_name} />}
-        {activeTab === 'certifications' && <CertificationsSection form={form} unitName={unit.unit_name} />}
+        {activeTab === 'certifications' && (
+          <CertificationsSection
+            form={form}
+            unitName={unit.unit_name}
+            onPendingFile={(index, file) => {
+              if (file) pendingCertImages.current.set(index, file);
+              else pendingCertImages.current.delete(index);
+            }}
+          />
+        )}
         {activeTab === 'awards' && <AwardsSection form={form} />}
         {activeTab === 'languages' && <LanguagesSection form={form} />}
         {activeTab === 'links' && <LinksSection form={form} />}

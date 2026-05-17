@@ -13,14 +13,18 @@ function CertItem({
   form,
   unitName,
   onRemove,
+  onPendingFile,
 }: {
   index: number;
   form: UseFormReturn<PWBUnitFormData>;
   unitName: string;
   onRemove: () => void;
+  onPendingFile: (file: File | null) => void;
 }) {
   const [open, setOpen] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { register, watch, setValue } = form;
   const { success, error: toastError } = useToast();
@@ -56,6 +60,27 @@ function CertItem({
     }
   };
 
+  const handleFileSelect = (file: File) => {
+    if (certId) {
+      handleUpload(file);
+    } else {
+      const url = URL.createObjectURL(file);
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      setPendingFile(file);
+      setPreviewUrl(url);
+      onPendingFile(file);
+    }
+  };
+
+  const handleClearPending = () => {
+    if (previewUrl) URL.revokeObjectURL(previewUrl);
+    setPendingFile(null);
+    setPreviewUrl(null);
+    onPendingFile(null);
+  };
+
+  const displayImage = imageUrl || previewUrl;
+
   return (
     <div className="bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-200 overflow-hidden">
       <div className="flex items-center gap-3 px-4 py-3 cursor-pointer" onClick={() => setOpen(!open)}>
@@ -86,48 +111,47 @@ function CertItem({
           <div>
             <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Badge / Logo</label>
             <div className="mt-2 flex items-center gap-3">
-              {certId ? (
-                <>
-                  {imageUrl && (
-                    <div className="relative group w-16 h-16 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 shrink-0">
-                      <img src={imageUrl} alt="" className="w-full h-full object-cover" />
-                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                        <button
-                          type="button"
-                          onClick={handleDelete}
-                          disabled={uploading}
-                          className="p-1 bg-white/90 rounded-full text-red-500 hover:bg-white"
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    icon={<Upload className="h-3 w-3" />}
-                    onClick={() => fileInputRef.current?.click()}
-                    loading={uploading}
-                  >
-                    {imageUrl ? 'Replace' : 'Upload badge'}
-                  </Button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    className="hidden"
-                    accept="image/jpeg,image/png,image/webp,image/gif"
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) handleUpload(file);
-                      e.target.value = '';
-                    }}
-                  />
-                </>
-              ) : (
-                <p className="text-xs text-slate-400 dark:text-slate-500">Save changes first to add a badge</p>
+              {displayImage && (
+                <div className="relative group w-16 h-16 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-700 shrink-0">
+                  <img src={displayImage} alt="" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <button
+                      type="button"
+                      onClick={pendingFile ? handleClearPending : handleDelete}
+                      disabled={uploading}
+                      className="p-1 bg-white/90 rounded-full text-red-500 hover:bg-white"
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </div>
+                </div>
               )}
+              <div className="flex flex-col gap-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  icon={<Upload className="h-3 w-3" />}
+                  onClick={() => fileInputRef.current?.click()}
+                  loading={uploading}
+                >
+                  {displayImage ? 'Replace' : 'Upload badge'}
+                </Button>
+                {pendingFile && !certId && (
+                  <p className="text-xs text-amber-500 dark:text-amber-400">Will upload after saving</p>
+                )}
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="hidden"
+                accept="image/jpeg,image/png,image/webp,image/gif"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFileSelect(file);
+                  e.target.value = '';
+                }}
+              />
             </div>
           </div>
         </div>
@@ -136,7 +160,15 @@ function CertItem({
   );
 }
 
-export function CertificationsSection({ form, unitName }: { form: UseFormReturn<PWBUnitFormData>; unitName: string }) {
+export function CertificationsSection({
+  form,
+  unitName,
+  onPendingFile,
+}: {
+  form: UseFormReturn<PWBUnitFormData>;
+  unitName: string;
+  onPendingFile: (index: number, file: File | null) => void;
+}) {
   const { control } = form;
   const { fields, append, remove } = useFieldArray({ control, name: 'certifications' });
 
@@ -144,7 +176,14 @@ export function CertificationsSection({ form, unitName }: { form: UseFormReturn<
     <div className="space-y-4">
       <div className="space-y-3">
         {fields.map((field, index) => (
-          <CertItem key={field.id} index={index} form={form} unitName={unitName} onRemove={() => remove(index)} />
+          <CertItem
+            key={field.id}
+            index={index}
+            form={form}
+            unitName={unitName}
+            onRemove={() => remove(index)}
+            onPendingFile={(file) => onPendingFile(index, file)}
+          />
         ))}
       </div>
       {fields.length === 0 && <p className="text-sm text-slate-400 text-center py-6">No certifications added yet</p>}
