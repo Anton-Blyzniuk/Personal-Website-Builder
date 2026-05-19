@@ -7,6 +7,7 @@ import { useToast } from '../hooks/useToast';
 import { extractErrorMessage } from '../lib/api';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
 import { Button } from '../components/ui/Button';
+import { JsonCodeEditor } from '../components/ui/JsonCodeEditor';
 import { PhotosSection } from '../components/pwbunit/sections/PhotosSection';
 import type { PWBUnitCreatePayload } from '../types/api';
 
@@ -307,25 +308,21 @@ export function PWBUnitImportPage() {
           <code className="text-primary-500 text-xs">headline</code>, <code className="text-primary-500 text-xs">email</code>.
         </p>
 
-        {/* Textarea */}
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50 rounded-xl overflow-hidden mb-4">
-          <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-800/40">
-            <span className="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400">JSON</span>
-            <button
-              type="button"
-              onClick={() => validate(EXAMPLE_JSON)}
-              className="text-xs text-primary-500 hover:text-primary-400 font-medium transition-colors"
-            >
-              Load example
-            </button>
-          </div>
-          <textarea
-            value={json}
-            onChange={e => validate(e.target.value)}
-            placeholder={'{\n  "unit_name": "your-name",\n  "first_name": "Jane",\n  ...\n}'}
-            spellCheck={false}
-            className="w-full h-72 p-4 text-xs font-mono bg-transparent text-slate-800 dark:text-slate-200 placeholder-slate-300 dark:placeholder-slate-700 focus:outline-none resize-none"
-          />
+        {/* Editor toolbar */}
+        <div className="flex items-center justify-between px-1 mb-1.5">
+          <span className="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400">JSON</span>
+          <button
+            type="button"
+            onClick={() => validate(EXAMPLE_JSON)}
+            className="text-xs text-primary-500 hover:text-primary-400 font-medium transition-colors"
+          >
+            Load example
+          </button>
+        </div>
+
+        {/* JSON editor */}
+        <div className="mb-4">
+          <JsonCodeEditor value={json} onChange={validate} height="min(500px, 55vh)" />
         </div>
 
         {/* Parse error */}
