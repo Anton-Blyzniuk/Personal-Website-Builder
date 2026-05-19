@@ -1,28 +1,10 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import CodeMirror from '@uiw/react-codemirror';
-import { json as jsonLang, jsonParseLinter } from '@codemirror/lang-json';
-import { linter, lintGutter } from '@codemirror/lint';
-import { githubLight, githubDarkInit } from '@uiw/codemirror-theme-github';
+import { useState, useEffect, useCallback } from 'react';
 import { AlertCircle, CheckCircle2, Info, FileJson, Copy, RefreshCcw, Braces, Check } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
+import { JsonCodeEditor } from '../ui/JsonCodeEditor';
 import type { PWBUnit } from '../../types/api';
 import type { PWBUnitFormData } from './PWBUnitForm';
-
-// ─── Theme (module-level, created once) ───────────────────────────────────────
-
-const darkTheme = githubDarkInit({
-  settings: {
-    background: '#0f172a',
-    gutterBackground: '#1e293b',
-    gutterBorder: 'transparent',
-    gutterForeground: '#475569',
-    lineHighlight: 'rgba(255,255,255,0.025)',
-    selection: 'rgba(148,163,184,0.2)',
-    selectionMatch: 'rgba(148,163,184,0.12)',
-    caret: '#94a3b8',
-  },
-});
 
 // ─── Serialise ────────────────────────────────────────────────────────────────
 
@@ -240,18 +222,6 @@ function fromJson(raw: any, ex: PWBUnitFormData): PWBUnitFormData {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function useDarkMode() {
-  const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
-  useEffect(() => {
-    const obs = new MutationObserver(() =>
-      setDark(document.documentElement.classList.contains('dark')),
-    );
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    return () => obs.disconnect();
-  }, []);
-  return dark;
-}
-
 function getSummary(data: PWBUnitFormData): string[] {
   const parts: string[] = [];
   const n = (arr?: unknown[]) => arr?.length ?? 0;
@@ -283,12 +253,6 @@ export function JSONEditorModal({ open, onClose, unit, formData, onApply }: JSON
   const [parseError, setParseError] = useState<string | null>(null);
   const [parsed, setParsed] = useState<PWBUnitFormData | null>(null);
   const [copied, setCopied] = useState(false);
-  const dark = useDarkMode();
-
-  const extensions = useMemo(
-    () => [jsonLang(), linter(jsonParseLinter()), lintGutter()],
-    [],
-  );
 
   useEffect(() => {
     if (open) {
@@ -362,7 +326,7 @@ export function JSONEditorModal({ open, onClose, unit, formData, onApply }: JSON
   const summary = parsed && !parseError ? getSummary(parsed) : null;
 
   return (
-    <Modal open={open} onClose={onClose} title="Edit JSON" size="lg">
+    <Modal open={open} onClose={onClose} title="Edit JSON" size="xl">
       <div className="p-5 space-y-3">
 
         {/* Read-only images notice */}
@@ -425,18 +389,7 @@ export function JSONEditorModal({ open, onClose, unit, formData, onApply }: JSON
         </div>
 
         {/* CodeMirror editor */}
-        <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700/50 text-xs">
-          <div className="h-52 sm:h-80">
-            <CodeMirror
-              value={text}
-              onChange={handleChange}
-              theme={dark ? darkTheme : githubLight}
-              extensions={extensions}
-              height="100%"
-              basicSetup={{ tabSize: 2 }}
-            />
-          </div>
-        </div>
+        <JsonCodeEditor value={text} onChange={handleChange} height="min(500px, 55vh)" />
 
         {/* Live section summary (shown when valid) */}
         {summary && summary.length > 0 && (
