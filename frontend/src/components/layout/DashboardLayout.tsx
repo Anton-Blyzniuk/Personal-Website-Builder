@@ -131,7 +131,7 @@ function SidebarContent({ onClose }: { onClose?: () => void }) {
   );
 }
 
-export function DashboardLayout({ children }: { children: React.ReactNode }) {
+export function DashboardLayout({ children, full }: { children: React.ReactNode; full?: boolean }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
@@ -173,9 +173,13 @@ export function DashboardLayout({ children }: { children: React.ReactNode }) {
           <ThemeToggle />
         </header>
 
-        <main className="flex-1 overflow-y-auto">
-          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</div>
-        </main>
+        {full ? (
+          <main className="flex-1 flex flex-col overflow-hidden">{children}</main>
+        ) : (
+          <main className="flex-1 overflow-y-auto">
+            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">{children}</div>
+          </main>
+        )}
       </div>
     </div>
   );
