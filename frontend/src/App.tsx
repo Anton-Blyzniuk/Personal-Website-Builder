@@ -18,6 +18,7 @@ import { PWBUnitImportPage } from './pages/PWBUnitImportPage';
 import { PlansPage } from './pages/PlansPage';
 import { AnalyticsPage } from './pages/AnalyticsPage';
 import { CVPage } from './pages/CVPage';
+import { PWBUnitJsonEditPage } from './pages/PWBUnitJsonEditPage';
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { staleTime: 30_000, retry: 1 } },
@@ -55,6 +56,7 @@ function AnimatedRoutes() {
         <Route path="/dashboard/pwbunits/new" element={<PWBUnitCreatePage />} />
         <Route path="/dashboard/pwbunits/import" element={<PWBUnitImportPage />} />
         <Route path="/dashboard/pwbunits/:unit_name/edit" element={<PWBUnitEditPage />} />
+        <Route path="/dashboard/pwbunits/:unit_name/edit-json" element={<PWBUnitJsonEditPage />} />
         <Route path="/dashboard/analytics" element={<AnalyticsPage />} />
         <Route path="/dashboard/plans" element={<PlansPage />} />
         <Route path="/dashboard/api-keys" element={<ApiKeysPage />} />

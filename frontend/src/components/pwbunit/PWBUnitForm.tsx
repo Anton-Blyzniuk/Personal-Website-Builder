@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   User,
   Briefcase,
@@ -30,7 +31,6 @@ import { AwardsSection } from './sections/AwardsSection';
 import { CustomSectionsSection } from './sections/CustomSectionsSection';
 import { PhotosSection } from './sections/PhotosSection';
 import { TemplateSection } from './sections/TemplateSection';
-import { JSONEditorModal } from './JSONEditorModal';
 import { mediaApi } from '../../api/media';
 import type { PWBUnit, PWBUnitUpdatePayload, PortfolioItemWrite, CertificationWrite } from '../../types/api';
 
@@ -69,7 +69,7 @@ function nullify<T>(val: T | '' | undefined): T | null {
   return val ?? null;
 }
 
-function buildDefaultValues(unit: PWBUnit): PWBUnitFormData {
+export function buildDefaultValues(unit: PWBUnit): PWBUnitFormData {
   return {
     first_name: unit.first_name,
     last_name: unit.last_name,
@@ -152,8 +152,8 @@ function buildDefaultValues(unit: PWBUnit): PWBUnitFormData {
 
 export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
   const [activeTab, setActiveTab] = useState('basic');
-  const [jsonEditorOpen, setJsonEditorOpen] = useState(false);
-  const [jsonSnapshot, setJsonSnapshot] = useState<PWBUnitFormData | null>(null);
+  const navigate = useNavigate();
+  const location = useLocation();
   const pendingCertImages = useRef<Map<number, File>>(new Map());
 
   const form = useForm<PWBUnitFormData>({
@@ -177,6 +177,19 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [unit]);
 
+  // Apply JSON data when returning from the JSON edit page
+  useEffect(() => {
+    const applied = (location.state as { jsonApplied?: PWBUnitFormData } | null)?.jsonApplied;
+    if (!applied) return;
+    (Object.keys(applied) as Array<keyof PWBUnitFormData>).forEach(key => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      form.setValue(key, applied[key] as any, { shouldDirty: true });
+    });
+    // Clear state so it's not re-applied on subsequent re-renders
+    window.history.replaceState(null, '');
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const { isDirty } = form.formState;
 
   useEffect(() => {
@@ -193,14 +206,8 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
   };
 
   const handleOpenJsonEditor = () => {
-    setJsonSnapshot(form.getValues());
-    setJsonEditorOpen(true);
-  };
-
-  const handleJsonApply = (data: PWBUnitFormData) => {
-    (Object.keys(data) as Array<keyof PWBUnitFormData>).forEach(key => {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      form.setValue(key, data[key] as any, { shouldDirty: true });
+    navigate(`/dashboard/pwbunits/${unit.unit_name}/edit-json`, {
+      state: { formData: form.getValues(), unit },
     });
   };
 
@@ -337,15 +344,6 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
         {activeTab === 'template' && <TemplateSection form={form} />}
       </div>
 
-      {jsonSnapshot && (
-        <JSONEditorModal
-          open={jsonEditorOpen}
-          onClose={() => setJsonEditorOpen(false)}
-          unit={unit}
-          formData={jsonSnapshot}
-          onApply={handleJsonApply}
-        />
-      )}
     </form>
   );
 }
