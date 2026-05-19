@@ -14,6 +14,7 @@ import {
   Star,
   Save,
   Palette,
+  FileJson,
 } from 'lucide-react';
 import { Tabs } from '../ui/Tabs';
 import { Button } from '../ui/Button';
@@ -29,6 +30,7 @@ import { AwardsSection } from './sections/AwardsSection';
 import { CustomSectionsSection } from './sections/CustomSectionsSection';
 import { PhotosSection } from './sections/PhotosSection';
 import { TemplateSection } from './sections/TemplateSection';
+import { JSONEditorModal } from './JSONEditorModal';
 import { mediaApi } from '../../api/media';
 import type { PWBUnit, PWBUnitUpdatePayload, PortfolioItemWrite, CertificationWrite } from '../../types/api';
 
@@ -150,6 +152,8 @@ function buildDefaultValues(unit: PWBUnit): PWBUnitFormData {
 
 export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
   const [activeTab, setActiveTab] = useState('basic');
+  const [jsonEditorOpen, setJsonEditorOpen] = useState(false);
+  const [jsonSnapshot, setJsonSnapshot] = useState<PWBUnitFormData | null>(null);
   const pendingCertImages = useRef<Map<number, File>>(new Map());
 
   const form = useForm<PWBUnitFormData>({
@@ -186,6 +190,18 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
   const handleTabChange = (id: string) => {
     setActiveTab(id);
     document.querySelector('main')?.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleOpenJsonEditor = () => {
+    setJsonSnapshot(form.getValues());
+    setJsonEditorOpen(true);
+  };
+
+  const handleJsonApply = (data: PWBUnitFormData) => {
+    (Object.keys(data) as Array<keyof PWBUnitFormData>).forEach(key => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      form.setValue(key, data[key] as any, { shouldDirty: true });
+    });
   };
 
   const handleSubmit = form.handleSubmit(async (data) => {
@@ -278,9 +294,19 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
           </h2>
           <p className="text-xs text-slate-500 dark:text-slate-500 font-mono">/{unit.unit_name}</p>
         </div>
-        <Button type="submit" loading={saving} icon={<Save className="h-4 w-4" />}>
-          Save changes
-        </Button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={handleOpenJsonEditor}
+            className="inline-flex items-center gap-1.5 text-xs font-medium px-2 sm:px-3 py-1.5 h-8 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 hover:border-slate-300 dark:hover:border-slate-600 active:scale-[0.97] transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 focus-visible:ring-offset-white dark:focus-visible:ring-offset-slate-950"
+          >
+            <FileJson className="h-3.5 w-3.5 shrink-0" />
+            <span className="hidden sm:inline">Edit JSON</span>
+          </button>
+          <Button type="submit" loading={saving} icon={<Save className="h-4 w-4" />}>
+            Save changes
+          </Button>
+        </div>
       </div>
 
       <Tabs tabs={tabs} active={activeTab} onChange={handleTabChange} />
@@ -310,6 +336,16 @@ export function PWBUnitForm({ unit, onSave, saving }: PWBUnitFormProps) {
         )}
         {activeTab === 'template' && <TemplateSection form={form} />}
       </div>
+
+      {jsonSnapshot && (
+        <JSONEditorModal
+          open={jsonEditorOpen}
+          onClose={() => setJsonEditorOpen(false)}
+          unit={unit}
+          formData={jsonSnapshot}
+          onApply={handleJsonApply}
+        />
+      )}
     </form>
   );
 }
