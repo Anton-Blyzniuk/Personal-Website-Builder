@@ -622,7 +622,7 @@ export function PWBUnitJsonEditPage() {
 
   return (
     <DashboardLayout full>
-      <div className="flex flex-col h-full">
+      <div className="flex-1 flex flex-col min-h-0">
         {/* ── Sticky header ── */}
         <div className="shrink-0 flex items-center justify-between gap-4 px-4 sm:px-6 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700/60">
           <div className="flex items-center gap-3 min-w-0">
@@ -716,9 +716,7 @@ export function PWBUnitJsonEditPage() {
             </div>
 
             {/* Editor */}
-            <div style={{ height: editorHeight }}>
-              <JsonCodeEditor value={text} onChange={handleChange} height="100%" />
-            </div>
+            <JsonCodeEditor value={text} onChange={handleChange} height={editorHeight} />
 
             {/* Section summary */}
             {summary && summary.length > 0 && (
