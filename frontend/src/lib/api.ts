@@ -6,6 +6,7 @@ import { useAuthStore } from '../store/authStore';
 export const apiClient = axios.create({
   baseURL: `${API_BASE_URL}/api/v1`,
   headers: { 'Content-Type': 'application/json' },
+  timeout: 30_000,
 });
 
 // Attach access token to every request

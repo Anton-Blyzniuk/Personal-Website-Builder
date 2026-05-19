@@ -313,4 +313,4 @@ class PWBUnitView(models.Model):
         ]
 
     def __str__(self):
-        return f"photo -> {self.pwb_unit.unit_name}"
+        return f"{self.pwb_unit.unit_name} [{self.source}]"
