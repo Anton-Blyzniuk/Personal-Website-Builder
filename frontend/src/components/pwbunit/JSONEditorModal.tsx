@@ -1,9 +1,28 @@
-import { useState, useEffect } from 'react';
-import { AlertCircle, Info, FileJson } from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import CodeMirror from '@uiw/react-codemirror';
+import { json as jsonLang, jsonParseLinter } from '@codemirror/lang-json';
+import { linter, lintGutter } from '@codemirror/lint';
+import { githubLight, githubDarkInit } from '@uiw/codemirror-theme-github';
+import { AlertCircle, CheckCircle2, Info, FileJson, Copy, RefreshCcw, Braces, Check } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import { Button } from '../ui/Button';
 import type { PWBUnit } from '../../types/api';
 import type { PWBUnitFormData } from './PWBUnitForm';
+
+// ─── Theme (module-level, created once) ───────────────────────────────────────
+
+const darkTheme = githubDarkInit({
+  settings: {
+    background: '#0f172a',
+    gutterBackground: '#1e293b',
+    gutterBorder: 'transparent',
+    gutterForeground: '#475569',
+    lineHighlight: 'rgba(255,255,255,0.025)',
+    selection: 'rgba(148,163,184,0.2)',
+    selectionMatch: 'rgba(148,163,184,0.12)',
+    caret: '#94a3b8',
+  },
+});
 
 // ─── Serialise ────────────────────────────────────────────────────────────────
 
@@ -219,6 +238,36 @@ function fromJson(raw: any, ex: PWBUnitFormData): PWBUnitFormData {
   };
 }
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function useDarkMode() {
+  const [dark, setDark] = useState(() => document.documentElement.classList.contains('dark'));
+  useEffect(() => {
+    const obs = new MutationObserver(() =>
+      setDark(document.documentElement.classList.contains('dark')),
+    );
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => obs.disconnect();
+  }, []);
+  return dark;
+}
+
+function getSummary(data: PWBUnitFormData): string[] {
+  const parts: string[] = [];
+  const n = (arr?: unknown[]) => arr?.length ?? 0;
+  const p = (count: number, s: string, pl: string) => `${count} ${count === 1 ? s : pl}`;
+  if (n(data.skills))           parts.push(p(n(data.skills), 'skill', 'skills'));
+  if (n(data.experience_units)) parts.push(p(n(data.experience_units), 'experience', 'experiences'));
+  if (n(data.education_units))  parts.push(p(n(data.education_units), 'education', 'educations'));
+  if (n(data.portfolio_items))  parts.push(p(n(data.portfolio_items), 'portfolio item', 'portfolio items'));
+  if (n(data.certifications))   parts.push(p(n(data.certifications), 'cert', 'certs'));
+  if (n(data.awards))           parts.push(p(n(data.awards), 'award', 'awards'));
+  if (n(data.languages))        parts.push(p(n(data.languages), 'language', 'languages'));
+  if (n(data.links))            parts.push(p(n(data.links), 'link', 'links'));
+  if (n(data.custom_sections))  parts.push(p(n(data.custom_sections), 'custom section', 'custom sections'));
+  return parts;
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
 interface JSONEditorModalProps {
@@ -230,34 +279,74 @@ interface JSONEditorModalProps {
 }
 
 export function JSONEditorModal({ open, onClose, unit, formData, onApply }: JSONEditorModalProps) {
-  const [json, setJson] = useState('');
+  const [text, setText] = useState('');
   const [parseError, setParseError] = useState<string | null>(null);
   const [parsed, setParsed] = useState<PWBUnitFormData | null>(null);
+  const [copied, setCopied] = useState(false);
+  const dark = useDarkMode();
+
+  const extensions = useMemo(
+    () => [jsonLang(), linter(jsonParseLinter()), lintGutter()],
+    [],
+  );
 
   useEffect(() => {
     if (open) {
-      setJson(toJson(formData, unit));
+      const initial = toJson(formData, unit);
+      setText(initial);
       setParsed(formData);
       setParseError(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
-  const validate = (text: string) => {
-    setJson(text);
-    if (!text.trim()) {
-      setParsed(null);
-      setParseError('JSON cannot be empty');
-      return;
-    }
+  const validate = useCallback(
+    (value: string) => {
+      if (!value.trim()) {
+        setParsed(null);
+        setParseError('JSON cannot be empty');
+        return;
+      }
+      try {
+        const raw = JSON.parse(value);
+        setParsed(fromJson(raw, formData));
+        setParseError(null);
+      } catch (err) {
+        setParsed(null);
+        setParseError(err instanceof Error ? err.message : 'Invalid JSON');
+      }
+    },
+    [formData],
+  );
+
+  const handleChange = useCallback(
+    (value: string) => {
+      setText(value);
+      validate(value);
+    },
+    [validate],
+  );
+
+  const handleFormat = () => {
     try {
-      const raw = JSON.parse(text);
-      setParsed(fromJson(raw, formData));
-      setParseError(null);
-    } catch (err) {
-      setParsed(null);
-      setParseError(err instanceof Error ? err.message : 'Invalid JSON');
+      const formatted = JSON.stringify(JSON.parse(text), null, 2);
+      setText(formatted);
+      validate(formatted);
+    } catch {
+      // already showing error
     }
+  };
+
+  const handleReset = () => {
+    const initial = toJson(formData, unit);
+    setText(initial);
+    validate(initial);
+  };
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleApply = () => {
@@ -266,36 +355,104 @@ export function JSONEditorModal({ open, onClose, unit, formData, onApply }: JSON
     onClose();
   };
 
+  const summary = parsed && !parseError ? getSummary(parsed) : null;
+
   return (
     <Modal open={open} onClose={onClose} title="Edit JSON" size="lg">
-      <div className="p-5 space-y-4">
+      <div className="p-5 space-y-3">
+
         {/* Read-only images notice */}
         <div className="flex items-start gap-2.5 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30 rounded-lg">
           <Info className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
           <p className="text-xs text-amber-700 dark:text-amber-400">
-            <strong>Photo and image fields are read-only</strong> — shown for reference but changes to those fields will be ignored.
-            Use the <strong>Photos & Media</strong> tab to manage images.
+            <strong>Photo and image fields are read-only</strong> — shown for reference but changes will
+            be ignored. Use the <strong>Photos &amp; Media</strong> tab to manage images.
           </p>
         </div>
 
-        {/* Editor */}
-        <div className="border border-slate-200 dark:border-slate-700/50 rounded-xl overflow-hidden">
-          <div className="px-4 py-2 border-b border-slate-100 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-800/40">
-            <span className="text-xs font-mono font-semibold text-slate-500 dark:text-slate-400">JSON</span>
+        {/* Toolbar */}
+        <div className="flex items-center justify-between gap-2 px-2 py-1.5 bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 rounded-lg">
+          <div className="flex items-center gap-0.5">
+            <button
+              type="button"
+              onClick={handleFormat}
+              title="Format / pretty-print"
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white dark:hover:bg-slate-700 active:scale-[0.97] transition-all duration-150"
+            >
+              <Braces className="h-3.5 w-3.5 shrink-0" />
+              <span className="hidden sm:inline">Format</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleReset}
+              title="Reset to current form values"
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white dark:hover:bg-slate-700 active:scale-[0.97] transition-all duration-150"
+            >
+              <RefreshCcw className="h-3.5 w-3.5 shrink-0" />
+              <span className="hidden sm:inline">Reset</span>
+            </button>
+            <button
+              type="button"
+              onClick={handleCopy}
+              title="Copy to clipboard"
+              className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-md text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-white dark:hover:bg-slate-700 active:scale-[0.97] transition-all duration-150"
+            >
+              {copied ? (
+                <Check className="h-3.5 w-3.5 shrink-0 text-green-500" />
+              ) : (
+                <Copy className="h-3.5 w-3.5 shrink-0" />
+              )}
+              <span className="hidden sm:inline">{copied ? 'Copied!' : 'Copy'}</span>
+            </button>
           </div>
-          <textarea
-            value={json}
-            onChange={e => validate(e.target.value)}
-            spellCheck={false}
-            className="w-full h-52 sm:h-72 p-4 text-xs font-mono bg-white dark:bg-slate-900/50 text-slate-800 dark:text-slate-200 focus:outline-none resize-none"
-          />
+
+          {/* Live status badge */}
+          {parseError ? (
+            <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800/40 shrink-0">
+              <AlertCircle className="h-3 w-3 shrink-0" />
+              <span>Invalid</span>
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-xs font-medium px-2.5 py-1 rounded-full bg-green-100 dark:bg-green-950/40 text-green-600 dark:text-green-400 border border-green-200 dark:border-green-800/40 shrink-0">
+              <CheckCircle2 className="h-3 w-3 shrink-0" />
+              <span>Valid</span>
+            </span>
+          )}
         </div>
 
-        {/* Error */}
+        {/* CodeMirror editor */}
+        <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700/50 text-xs">
+          <div className="h-52 sm:h-80">
+            <CodeMirror
+              value={text}
+              onChange={handleChange}
+              theme={dark ? darkTheme : githubLight}
+              extensions={extensions}
+              height="100%"
+              basicSetup={{ tabSize: 2 }}
+            />
+          </div>
+        </div>
+
+        {/* Live section summary (shown when valid) */}
+        {summary && summary.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 animate-scale-in">
+            {summary.map(s => (
+              <span
+                key={s}
+                className="text-xs px-2 py-0.5 rounded-md bg-primary-500/10 text-primary-500 dark:text-primary-400 border border-primary-500/20"
+              >
+                {s}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {/* Parse error detail */}
         {parseError && (
           <div className="flex items-start gap-2 p-3 bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800/30 rounded-lg animate-scale-in">
             <AlertCircle className="h-4 w-4 text-red-500 mt-0.5 shrink-0" />
-            <p className="text-sm text-red-700 dark:text-red-400">{parseError}</p>
+            <p className="text-xs font-mono text-red-700 dark:text-red-400 break-all">{parseError}</p>
           </div>
         )}
 
