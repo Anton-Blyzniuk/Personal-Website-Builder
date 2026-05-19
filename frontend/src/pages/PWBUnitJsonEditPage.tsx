@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import {
   ArrowLeft, AlertCircle, CheckCircle2, Info, FileJson,
   Copy, RefreshCcw, Braces, Check, Camera, ChevronDown, ChevronUp,
-  ClipboardCopy, Upload,
+  ClipboardCopy, Upload, Star, Trash2, Plus,
 } from 'lucide-react';
 import { pwbUnitsApi } from '../api/pwbunits';
 import { mediaApi } from '../api/media';
@@ -15,12 +15,12 @@ import { Button } from '../components/ui/Button';
 import { JsonCodeEditor } from '../components/ui/JsonCodeEditor';
 import { PageSpinner } from '../components/ui/Spinner';
 import { buildDefaultValues } from '../components/pwbunit/PWBUnitForm';
-import type { PWBUnit } from '../types/api';
+import type { PWBUnit, Photo } from '../types/api';
 import type { PWBUnitFormData } from '../components/pwbunit/PWBUnitForm';
 
 // ─── JSON Serialise ───────────────────────────────────────────────────────────
 
-function toJson(fd: PWBUnitFormData, unit: PWBUnit): string {
+function toJson(fd: PWBUnitFormData, photos: Photo[]): string {
   return JSON.stringify(
     {
       first_name: fd.first_name,
@@ -97,7 +97,7 @@ function toJson(fd: PWBUnitFormData, unit: PWBUnit): string {
           order: item.order,
         })),
       })),
-      photos: unit.photos.map(p => ({ id: p.id, image: p.image, is_main: p.is_main })),
+      photos: photos.map(p => ({ id: p.id, image: p.image, is_main: p.is_main })),
     },
     null,
     2,
@@ -438,11 +438,14 @@ export function PWBUnitJsonEditPage() {
   const [templateCopied, setTemplateCopied] = useState(false);
   const [imagesOpen, setImagesOpen] = useState(false);
   const [uploadingIdx, setUploadingIdx] = useState<string | null>(null);
+  const [photos, setPhotos] = useState<Photo[]>([]);
 
   // Initialize editor when unit/formData is ready
   useEffect(() => {
     if (!initialFormData || !unit || text) return;
-    const initial = toJson(initialFormData, unit);
+    const unitPhotos = unit.photos ?? [];
+    setPhotos(unitPhotos);
+    const initial = toJson(initialFormData, unitPhotos);
     setText(initial);
     setParsed(initialFormData);
   // Run only once when data becomes available
@@ -480,9 +483,9 @@ export function PWBUnitJsonEditPage() {
   };
 
   const handleReset = () => {
-    if (!initialFormData || !unit) return;
+    if (!initialFormData) return;
     existingRef.current = initialFormData;
-    const initial = toJson(initialFormData, unit);
+    const initial = toJson(initialFormData, photos);
     setText(initial);
     validate(initial);
   };
@@ -549,7 +552,7 @@ export function PWBUnitJsonEditPage() {
         items[index] = { ...items[index], _image: imageUrl };
         updated = { ...updated, certifications: items };
       }
-      setText(toJson(updated, unit));
+      setText(toJson(updated, photos));
       return updated;
     });
   };
@@ -584,18 +587,67 @@ export function PWBUnitJsonEditPage() {
     }
   };
 
+  const handlePhotoUpload = async (file: File) => {
+    if (!unit_name) return;
+    setUploadingIdx('photo:new');
+    try {
+      const res = await mediaApi.uploadPhoto(unit_name, file, photos.length === 0);
+      const newPhotos = [...photos, res];
+      setPhotos(newPhotos);
+      if (parsed) setText(toJson(parsed, newPhotos));
+      toastSuccess('Photo uploaded');
+    } catch (err) {
+      toastError(extractErrorMessage(err));
+    } finally {
+      setUploadingIdx(null);
+    }
+  };
+
+  const handleSetMainPhoto = async (photoId: number) => {
+    if (!unit_name) return;
+    setUploadingIdx(`photo:main:${photoId}`);
+    try {
+      await mediaApi.setMainPhoto(unit_name, photoId);
+      const newPhotos = photos.map(p => ({ ...p, is_main: p.id === photoId }));
+      setPhotos(newPhotos);
+      if (parsed) setText(toJson(parsed, newPhotos));
+      toastSuccess('Main photo updated');
+    } catch (err) {
+      toastError(extractErrorMessage(err));
+    } finally {
+      setUploadingIdx(null);
+    }
+  };
+
+  const handleDeletePhoto = async (photoId: number) => {
+    if (!unit_name) return;
+    setUploadingIdx(`photo:del:${photoId}`);
+    try {
+      await mediaApi.deletePhoto(unit_name, photoId);
+      const newPhotos = photos.filter(p => p.id !== photoId);
+      setPhotos(newPhotos);
+      if (parsed) setText(toJson(parsed, newPhotos));
+      toastSuccess('Photo deleted');
+    } catch (err) {
+      toastError(extractErrorMessage(err));
+    } finally {
+      setUploadingIdx(null);
+    }
+  };
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   const summary = parsed && !parseError ? getSummary(parsed) : null;
 
   const portfolioItems = parsed?.portfolio_items ?? [];
   const certItems = parsed?.certifications ?? [];
-  const hasImageItems = portfolioItems.length > 0 || certItems.length > 0;
+  const hasImageItems = portfolioItems.length > 0 || certItems.length > 0 || photos.length > 0;
   const existingPortfolio = portfolioItems.filter(p => p._id);
   const existingCerts = certItems.filter(c => c._id);
   const newItemsCount =
     (portfolioItems.length - existingPortfolio.length) +
     (certItems.length - existingCerts.length);
+  const totalImageCount = portfolioItems.length + certItems.length + photos.length;
 
   if (unitLoading && !unit) {
     return (
@@ -648,7 +700,7 @@ export function PWBUnitJsonEditPage() {
         </div>
 
         {/* ── Scrollable body ── */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 min-h-0 overflow-y-auto">
           <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 space-y-3">
 
             {/* Notice */}
@@ -754,7 +806,7 @@ export function PWBUnitJsonEditPage() {
                       Images
                     </span>
                     <span className="text-xs px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-400">
-                      {portfolioItems.length + certItems.length} item{portfolioItems.length + certItems.length !== 1 ? 's' : ''}
+                      {totalImageCount} item{totalImageCount !== 1 ? 's' : ''}
                     </span>
                   </div>
                   {imagesOpen
@@ -797,6 +849,94 @@ export function PWBUnitJsonEditPage() {
                             onUpload={f => cert._id && handleCertUpload(i, cert._id, f)}
                           />
                         ))}
+                      </div>
+                    )}
+                    {photos.length > 0 && (
+                      <div>
+                        <p className="text-xs font-semibold text-slate-400 dark:text-slate-600 uppercase tracking-wide mt-3 mb-1">
+                          Profile photos
+                        </p>
+                        {photos.map(photo => (
+                          <div key={photo.id} className="flex items-center gap-3 py-2">
+                            <div className="h-12 w-12 shrink-0 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700/50">
+                              <img src={photo.image} alt="" className="h-full w-full object-cover" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <p className="text-sm font-medium text-slate-800 dark:text-slate-200 truncate">
+                                  Photo #{photo.id}
+                                </p>
+                                {photo.is_main && (
+                                  <span className="inline-flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-800/40 shrink-0">
+                                    <Star className="h-3 w-3" />
+                                    Main
+                                  </span>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-2 mt-0.5">
+                                {!photo.is_main && (
+                                  <button
+                                    type="button"
+                                    disabled={uploadingIdx === `photo:main:${photo.id}`}
+                                    onClick={() => handleSetMainPhoto(photo.id)}
+                                    className="inline-flex items-center gap-1 text-xs font-medium text-primary-500 hover:text-primary-400 disabled:opacity-50 transition-colors"
+                                  >
+                                    <Star className="h-3 w-3" />
+                                    {uploadingIdx === `photo:main:${photo.id}` ? 'Updating…' : 'Set main'}
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  disabled={uploadingIdx === `photo:del:${photo.id}`}
+                                  onClick={() => handleDeletePhoto(photo.id)}
+                                  className="inline-flex items-center gap-1 text-xs font-medium text-red-500 hover:text-red-400 disabled:opacity-50 transition-colors"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                  {uploadingIdx === `photo:del:${photo.id}` ? 'Deleting…' : 'Delete'}
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                        <div className="pt-1">
+                          <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs font-medium text-primary-500 hover:text-primary-400 transition-colors">
+                            <Plus className="h-3 w-3" />
+                            {uploadingIdx === 'photo:new' ? 'Uploading…' : 'Upload new photo'}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              disabled={uploadingIdx === 'photo:new'}
+                              onChange={e => {
+                                const f = e.target.files?.[0];
+                                if (f) handlePhotoUpload(f);
+                                e.target.value = '';
+                              }}
+                            />
+                          </label>
+                        </div>
+                      </div>
+                    )}
+                    {photos.length === 0 && (
+                      <div className="pt-3">
+                        <p className="text-xs font-semibold text-slate-400 dark:text-slate-600 uppercase tracking-wide mb-1">
+                          Profile photos
+                        </p>
+                        <label className="inline-flex items-center gap-1.5 cursor-pointer text-xs font-medium text-primary-500 hover:text-primary-400 transition-colors">
+                          <Plus className="h-3 w-3" />
+                          {uploadingIdx === 'photo:new' ? 'Uploading…' : 'Upload first photo'}
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            disabled={uploadingIdx === 'photo:new'}
+                            onChange={e => {
+                              const f = e.target.files?.[0];
+                              if (f) handlePhotoUpload(f);
+                              e.target.value = '';
+                            }}
+                          />
+                        </label>
                       </div>
                     )}
                     {newItemsCount > 0 && (

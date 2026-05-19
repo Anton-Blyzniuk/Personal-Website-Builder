@@ -48,16 +48,13 @@ export function JsonCodeEditor({ value, onChange, height = '400px' }: JsonCodeEd
   );
 
   return (
-    <div
-      className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700/50 text-xs"
-      style={{ height }}
-    >
+    <div className="rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700/50 text-xs">
       <CodeMirror
         value={value}
         onChange={onChange}
         theme={dark ? darkTheme : githubLight}
         extensions={extensions}
-        height="100%"
+        height={height}
         basicSetup={{ tabSize: 2 }}
       />
     </div>
