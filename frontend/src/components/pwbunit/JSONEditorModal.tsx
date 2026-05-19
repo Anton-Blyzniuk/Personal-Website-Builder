@@ -327,14 +327,14 @@ export function JSONEditorModal({ open, onClose, unit, formData, onApply }: JSON
 
   return (
     <Modal open={open} onClose={onClose} title="Edit JSON" size="xl">
-      <div className="p-5 space-y-3">
+      <div className="p-4 space-y-2">
 
         {/* Read-only images notice */}
-        <div className="flex items-start gap-2.5 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30 rounded-lg">
-          <Info className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
+        <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30 rounded-lg">
+          <Info className="h-3.5 w-3.5 text-amber-500 shrink-0" />
           <p className="text-xs text-amber-700 dark:text-amber-400">
-            <strong>Photo and image fields are read-only</strong> — shown for reference but changes will
-            be ignored. Use the <strong>Photos &amp; Media</strong> tab to manage images.
+            <strong>Photo/image fields are read-only.</strong>{' '}
+            Use the <strong>Photos &amp; Media</strong> tab to manage images.
           </p>
         </div>
 
@@ -389,7 +389,7 @@ export function JSONEditorModal({ open, onClose, unit, formData, onApply }: JSON
         </div>
 
         {/* CodeMirror editor */}
-        <JsonCodeEditor value={text} onChange={handleChange} height="min(500px, 55vh)" />
+        <JsonCodeEditor value={text} onChange={handleChange} height="min(65vh, 700px)" />
 
         {/* Live section summary (shown when valid) */}
         {summary && summary.length > 0 && (
