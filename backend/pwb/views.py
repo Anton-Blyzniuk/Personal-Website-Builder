@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.db.models import Prefetch
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
@@ -88,17 +89,24 @@ class PWBUnitViewSet(
         serializer.save(owner=self.request.user)
 
     def create(self, request, *args, **kwargs):
-        limit = User.PLAN_LIMITS.get(request.user.plan)
-        if limit is not None:
-            count = PWBUnit.objects.filter(owner=request.user).count()
-            if count >= limit:
-                return Response(
-                    {"detail": f"Your {request.user.get_plan_display()} plan allows up to {limit} PWBUnit(s). Contact bliznukantonmain@gmail.com to upgrade."},
-                    status=status.HTTP_403_FORBIDDEN,
-                )
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+
+        limit = User.PLAN_LIMITS.get(request.user.plan)
+        with transaction.atomic():
+            if limit is not None:
+                # Lock the user row to serialise concurrent creates for the same account,
+                # preventing a race condition where two simultaneous requests both pass
+                # the count check and both proceed to insert.
+                User.objects.select_for_update().filter(pk=request.user.pk).get()
+                count = PWBUnit.objects.filter(owner=request.user).count()
+                if count >= limit:
+                    return Response(
+                        {"detail": f"Your {request.user.get_plan_display()} plan allows up to {limit} PWBUnit(s). Contact bliznukantonmain@gmail.com to upgrade."},
+                        status=status.HTTP_403_FORBIDDEN,
+                    )
+            self.perform_create(serializer)
+
         instance = _full_queryset().get(pk=serializer.instance.pk)
         response = PWBUnitSerializer(instance, context=self.get_serializer_context())
         return Response(response.data, status=status.HTTP_201_CREATED,

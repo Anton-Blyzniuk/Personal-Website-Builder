@@ -11,9 +11,14 @@ from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import AnonRateThrottle
 from rest_framework.views import APIView
 
 from .models import PWBUnit, PWBUnitView
+
+
+class TrackViewThrottle(AnonRateThrottle):
+    scope = "track_view"
 
 
 # ---------------------------------------------------------------------------
@@ -82,19 +87,17 @@ def record_view(pwb_unit: PWBUnit, request, source: str) -> None:
 
 class TrackViewAPIView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [TrackViewThrottle]
 
     @extend_schema(
         summary="Record a PWBUnit view",
-        description="Called by the public CV template to record a web visit. Source must be 'web'.",
+        description="Called by the public CV template to record a web visit.",
         responses={204: None, 404: OpenApiResponse(description="Unit not found")},
         tags=["analytics"],
     )
     def post(self, request, unit_name):
         pwb_unit = get_object_or_404(PWBUnit, unit_name=unit_name)
-        source = request.data.get('source', 'web')
-        if source not in ('web', 'api'):
-            source = 'web'
-        record_view(pwb_unit, request, source=source)
+        record_view(pwb_unit, request, source='web')
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 

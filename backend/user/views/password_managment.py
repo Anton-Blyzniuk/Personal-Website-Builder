@@ -32,20 +32,20 @@ class ChangePasswordView(APIView):
 
         if not user.check_password(current_password):
             return Response(
-                {"details": "current password is wrong."},
+                {"detail": "Current password is incorrect."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         try:
             validate_password(password=new_password, user=user)
-        except DjangoValidationError:
+        except DjangoValidationError as exc:
             return Response(
-                {"details": "new password is invalid."},
+                {"detail": " ".join(exc.messages)},
                 status=status.HTTP_400_BAD_REQUEST,
             )
         user.set_password(new_password)
         user.save()
         return Response(
-            {"details": "password changed."},
+            {"detail": "Password changed successfully."},
             status=status.HTTP_200_OK,
         )
 

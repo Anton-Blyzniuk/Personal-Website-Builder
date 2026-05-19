@@ -134,6 +134,7 @@ REST_FRAMEWORK = {
         "registration": "10/hour",
         "token":        "20/hour",
         "api_key":      "5/hour",
+        "track_view":   "120/hour",
     },
 }
 

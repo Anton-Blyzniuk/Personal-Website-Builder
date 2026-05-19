@@ -344,9 +344,13 @@ export function JSONEditorModal({ open, onClose, unit, formData, onApply }: JSON
   };
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard API unavailable (non-HTTPS or permission denied) — fail silently
+    }
   };
 
   const handleApply = () => {

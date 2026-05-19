@@ -25,6 +25,9 @@ function buildPayload(raw: any): PWBUnitCreatePayload {
     phone:      raw.phone    ? String(raw.phone)    : null,
     location:   raw.location ? String(raw.location) : null,
     about:      raw.about    ? String(raw.about)    : null,
+    template:   (['classic', 'modern', 'minimal'] as const).includes(raw.template)
+                  ? raw.template
+                  : 'classic',
   };
 
   if (Array.isArray(raw.skills)) {
