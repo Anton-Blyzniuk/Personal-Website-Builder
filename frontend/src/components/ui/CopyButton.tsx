@@ -10,9 +10,13 @@ interface CopyButtonProps {
 export function CopyButton({ text, className, iconClassName = 'h-4 w-4' }: CopyButtonProps) {
   const [copied, setCopied] = useState(false);
   const handle = async () => {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      // Clipboard unavailable — fail silently
+    }
   };
   return (
     <button

@@ -283,6 +283,8 @@ export function PWBUnitImportPage() {
 
   // ── Phase 1: paste JSON ──────────────────────────────────────────────────
 
+  const sections = parsed ? countSections(parsed.raw) : [];
+
   return (
     <DashboardLayout>
       <div className="page-enter max-w-3xl">
@@ -355,11 +357,11 @@ export function PWBUnitImportPage() {
                 <span className="text-xs text-slate-400 w-24 shrink-0">Headline</span>
                 <span className="text-sm text-slate-700 dark:text-slate-300">{parsed.payload.headline}</span>
               </div>
-              {countSections(parsed.raw).length > 0 && (
+              {sections.length > 0 && (
                 <div className="flex gap-3 items-start">
                   <span className="text-xs text-slate-400 w-24 shrink-0 pt-0.5">Sections</span>
                   <div className="flex flex-wrap gap-1.5">
-                    {countSections(parsed.raw).map(s => (
+                    {sections.map(s => (
                       <span key={s} className="text-xs px-2 py-0.5 rounded-md bg-primary-500/10 text-primary-500 dark:text-primary-400 border border-primary-500/20">
                         {s}
                       </span>

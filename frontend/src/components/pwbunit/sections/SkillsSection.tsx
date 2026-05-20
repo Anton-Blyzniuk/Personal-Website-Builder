@@ -1,5 +1,5 @@
 import { useFieldArray, UseFormReturn } from 'react-hook-form';
-import { Plus, Trash2, GripVertical } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import { Input } from '../../ui/Input';
 import { Select } from '../../ui/Select';
 import { Button } from '../../ui/Button';
@@ -22,7 +22,6 @@ export function SkillsSection({ form }: { form: UseFormReturn<PWBUnitFormData> }
       <div className="space-y-3">
         {fields.map((field, index) => (
           <div key={field.id} className="flex items-start gap-3 bg-slate-50 dark:bg-slate-800/60 rounded-xl p-4">
-            <GripVertical className="h-5 w-5 text-slate-300 mt-2 shrink-0" />
             <div className="flex-1 grid grid-cols-1 sm:grid-cols-3 gap-3">
               <Input placeholder="Skill name" {...register(`skills.${index}.name`)} />
               <Input placeholder="Category (e.g. Backend)" {...register(`skills.${index}.category`)} />

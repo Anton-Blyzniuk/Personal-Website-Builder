@@ -72,7 +72,7 @@ export function ExperienceSection({ form }: { form: UseFormReturn<PWBUnitFormDat
         size="sm"
         icon={<Plus className="h-4 w-4" />}
         onClick={() =>
-          append({ title: '', organization: null, location: null, description: null, from_date: '', to_date: null, order: fields.length })
+          append({ title: '', organization: '', location: '', description: '', from_date: '', to_date: '', order: fields.length })
         }
       >
         Add experience

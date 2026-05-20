@@ -73,12 +73,12 @@ export interface LinkWrite {
 export interface LanguageWrite {
   name: string;
   level:
-    | 'A1 Begginer'
+    | 'A1 Beginner'
     | 'A2 Elementary'
     | 'B1 Intermediate'
     | 'B2 Upper-Intermediate'
     | 'C1 Advanced'
-    | 'C2 Advanced Proficy'
+    | 'C2 Advanced Proficiency'
     | 'Native'
     | 'Bilingual';
 }
@@ -233,6 +233,7 @@ export interface PWBUnitListItem {
   email: string;
   phone: string | null;
   location: string | null;
+  template: 'classic' | 'modern' | 'minimal';
 }
 
 export interface PWBUnitCreatePayload {

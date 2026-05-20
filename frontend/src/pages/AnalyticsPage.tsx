@@ -352,7 +352,7 @@ export function AnalyticsPage() {
   const [refreshing, setRefreshing] = useState(false);
   const queryClient = useQueryClient();
 
-  const { data: unitsData, isLoading: unitsLoading } = useQuery({
+  const { data: unitsData, isLoading: unitsLoading, isError: unitsError } = useQuery({
     queryKey: ['pwbunits'],
     queryFn: () => pwbUnitsApi.list(),
   });
@@ -368,8 +368,11 @@ export function AnalyticsPage() {
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await queryClient.invalidateQueries({ queryKey: ['analytics', selectedUnit, period] });
-    setRefreshing(false);
+    try {
+      await queryClient.refetchQueries({ queryKey: ['analytics', selectedUnit, period] });
+    } finally {
+      setRefreshing(false);
+    }
   };
 
   return (
@@ -449,6 +452,13 @@ export function AnalyticsPage() {
               {[...Array(4)].map((_, i) => <div key={i} className="h-20 rounded-xl bg-slate-200 dark:bg-slate-800" />)}
             </div>
             <div className="h-64 rounded-xl bg-slate-200 dark:bg-slate-800" />
+          </div>
+        ) : unitsError ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center">
+            <p className="text-slate-600 dark:text-slate-400 font-medium">Failed to load units</p>
+            <p className="text-slate-400 dark:text-slate-600 text-sm mt-1">
+              Please refresh the page.
+            </p>
           </div>
         ) : units.length === 0 ? (
           <EmptyUnits />
