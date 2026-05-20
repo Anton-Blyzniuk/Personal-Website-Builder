@@ -341,6 +341,11 @@ function AnalyticsContent({ unitName, period }: { unitName: string; period: numb
       {/* ── Engagement metrics ─────────────────────────────────────────────── */}
       {data.engagement && data.engagement.total_sessions > 0 && (
         <>
+          <div className="flex items-center gap-3 pt-1">
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 shrink-0">Visitor engagement</p>
+            <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800" />
+            <span className="text-xs text-slate-400 dark:text-slate-600 shrink-0">{data.engagement.total_sessions} session{data.engagement.total_sessions !== 1 ? 's' : ''}</span>
+          </div>
           {/* Engagement stat cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
             {data.engagement.avg_time_on_page !== null && (

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import {
   ExternalLink, Search, Copy, Check, BookOpen, Zap, Key,
-  Code2, Shield, Database, AlertCircle, ChevronRight, X, Bot,
+  Code2, Shield, Database, AlertCircle, ChevronRight, X, Bot, Activity,
 } from 'lucide-react';
 import { PublicLayout } from '../components/layout/PublicLayout';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
@@ -119,6 +119,46 @@ GET ${base}/teammates/
 GET ${base}/teammates/<id>/
   res: list shape + date_of_birth:date|null, story:str|null
 
+### Analytics — Track View  [public, throttle 60/hr]
+POST ${base}/pwbunits/<unit_name>/track-view/
+  body: {"referrer":"string"}  (all optional)
+  204: no body
+  Records a web page view. Bots filtered by User-Agent.
+
+### Analytics — Track Engagement  [public, throttle 60/hr]
+POST ${base}/pwbunits/<unit_name>/track-engagement/
+  All body fields optional. Use navigator.sendBeacon or fetch with keepalive:true on page leave.
+  body fields:
+    session_id      string       UUID from sessionStorage (key "pwb_session") — correlates view+engagement
+    referrer        string       document.referrer
+    page_url        string       window.location.href (max 500)
+    time_on_page    int(seconds) seconds from load to flush
+    scroll_depth    int 0–100    max scroll % achieved
+    screen_width    int          window.screen.width
+    screen_height   int          window.screen.height
+    viewport_width  int          window.innerWidth
+    viewport_height int          window.innerHeight
+    language        string       navigator.language
+    timezone        string       Intl.DateTimeFormat().resolvedOptions().timeZone
+    color_scheme    dark|light|unknown
+    connection_type 4g|3g|2g|slow-2g|unknown  navigator.connection.effectiveType
+    pdf_downloaded  bool         true if PDF/download link clicked
+    email_clicked   bool         true if mailto: link clicked
+    phone_clicked   bool         true if tel: link clicked
+    links_clicked   string[]     text of links clicked (max 20)
+    sections_viewed string[]     section IDs that reached ≥30% viewport (e.g. ["experience","skills"])
+  204: no body
+  Data appears in owner's Analytics dashboard under "Visitor engagement".
+
+### Analytics — Tracker Script  [public static file]
+GET ${base.replace('/api/v1', '')}/static/pwb-tracker.js
+  Drop-in vanilla JS tracker. Include via:
+    <script src="${base.replace('/api/v1', '')}/static/pwb-tracker.js" data-unit="UNIT" data-api="${base.replace('/api/v1', '')}"></script>
+  Or: window.PWBConfig = { unit:'UNIT', api:'BASE_URL' }; before the script tag.
+  Auto-tracks: scroll depth, time on page, section visibility (data-section attributes),
+  link/PDF/email/tel clicks, screen size, language, timezone, color scheme, connection type.
+  Sends on pagehide via sendBeacon + keepalive fetch at 45s.
+
 ## Write Schemas for PWBUnit Nested Arrays
 
 SkillWrite:
@@ -173,6 +213,8 @@ experience_units include {id,...writeFields}
 ## Rate Limits (per anonymous IP)
 POST /user/register/, POST /admin/register/ → 10/hour
 POST /token/ → 20/hour
+POST /pwbunits/<unit>/track-view/ → 60/hour
+POST /pwbunits/<unit>/track-engagement/ → 60/hour
 Authenticated endpoints: not throttled. Exceeded → 429 Too Many Requests.
 `;
 }
@@ -200,9 +242,12 @@ const NAV: NavItem[] = [
       { id: 'ep-pdf',          title: 'PDF Resume' },
       { id: 'ep-edu-image',    title: 'Education Images' },
       { id: 'ep-portfolio-image', title: 'Portfolio Images' },
-      { id: 'ep-teammates',    title: 'Teammates' },
+      { id: 'ep-teammates',            title: 'Teammates' },
+      { id: 'ep-analytics-view',       title: 'Analytics — Track View' },
+      { id: 'ep-analytics-engagement', title: 'Analytics — Track Engagement' },
     ],
   },
+  { id: 'tracker-script', title: 'Tracker Script' },
   { id: 'schemas',     title: 'Data Schemas' },
   { id: 'rate-limits', title: 'Rate Limits' },
   { id: 'interactive', title: 'Interactive Docs' },
@@ -1025,6 +1070,163 @@ is_main   bool   optional (default false) — "true"/"1"/"yes" accepted`}</CodeB
 }`}</ResBlock>
                 </EndpointCard>
               </Sub>
+
+              <Sub id="ep-analytics-view" title="Analytics — Track View">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
+                  Public endpoint. Called by the CV page to record a web visit. No auth required.
+                </p>
+                <EndpointCard method="POST" path="/pwbunits/{unit_name}/track-view/" description="Record a page view" auth="public">
+                  <ReqBlock>{`{
+  "referrer": "https://google.com"  // optional; document.referrer
+}`}</ReqBlock>
+                  <ResBlock status={204}>{`// No body`}</ResBlock>
+                  <p className="text-xs text-slate-500">Throttled: 60 req/hour per IP. Bots filtered automatically via User-Agent.</p>
+                </EndpointCard>
+              </Sub>
+
+              <Sub id="ep-analytics-engagement" title="Analytics — Track Engagement">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
+                  Public endpoint. Send rich browser engagement data when a visitor leaves a CV page.
+                  All fields are optional — include only what the browser exposes.
+                  Use <code className="text-primary-500 text-xs">navigator.sendBeacon</code> for reliability on tab close,
+                  or <code className="text-primary-500 text-xs">fetch</code> with <code className="text-primary-500 text-xs">keepalive: true</code>.
+                </p>
+                <EndpointCard method="POST" path="/pwbunits/{unit_name}/track-engagement/" description="Record rich engagement data for a visit" auth="public">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Request body — all fields optional</p>
+                    <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-700/50 mb-3">
+                      <table className="w-full text-xs">
+                        <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700/50">
+                          <tr>
+                            <th className="text-left px-3 py-2 font-semibold text-slate-700 dark:text-slate-300">Field</th>
+                            <th className="text-left px-3 py-2 font-semibold text-slate-700 dark:text-slate-300">Type</th>
+                            <th className="text-left px-3 py-2 font-semibold text-slate-700 dark:text-slate-300">Description</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono">
+                          {[
+                            ['session_id',      'string',        'UUID from sessionStorage — correlates view + engagement records'],
+                            ['referrer',        'string',        'document.referrer (domain only stored, max 200 chars)'],
+                            ['page_url',        'string',        'window.location.href (max 500 chars)'],
+                            ['time_on_page',    'int (seconds)', 'Seconds from page load to flush'],
+                            ['scroll_depth',    'int 0–100',     'Max scroll % achieved during visit'],
+                            ['screen_width',    'int',           'window.screen.width'],
+                            ['screen_height',   'int',           'window.screen.height'],
+                            ['viewport_width',  'int',           'window.innerWidth'],
+                            ['viewport_height', 'int',           'window.innerHeight'],
+                            ['language',        'string',        'navigator.language (e.g. "en-US")'],
+                            ['timezone',        'string',        'Intl.DateTimeFormat().resolvedOptions().timeZone'],
+                            ['color_scheme',    '"dark"|"light"|"unknown"', 'prefers-color-scheme media query'],
+                            ['connection_type',  '"4g"|"3g"|"2g"|"slow-2g"|"unknown"', 'navigator.connection.effectiveType'],
+                            ['pdf_downloaded',  'bool',          'true if visitor clicked a PDF / download link'],
+                            ['email_clicked',   'bool',          'true if visitor clicked a mailto: link'],
+                            ['phone_clicked',   'bool',          'true if visitor clicked a tel: link'],
+                            ['links_clicked',   'string[]',      'Text labels of links clicked (max 20 items)'],
+                            ['sections_viewed', 'string[]',      'section identifiers that reached ≥30% viewport (e.g. "experience")'],
+                          ].map(([field, type, desc]) => (
+                            <tr key={field} className="bg-white dark:bg-slate-900">
+                              <td className="px-3 py-1.5 text-primary-400">{field}</td>
+                              <td className="px-3 py-1.5 text-amber-400 whitespace-nowrap">{type}</td>
+                              <td className="px-3 py-1.5 text-slate-500 font-sans">{desc}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    <CodeBlock>{`// Minimal JS example — sendBeacon on page leave
+const SESSION_KEY = 'pwb_session';
+let sid = sessionStorage.getItem(SESSION_KEY);
+if (!sid) { sid = crypto.randomUUID(); sessionStorage.setItem(SESSION_KEY, sid); }
+
+const payload = JSON.stringify({
+  session_id:      sid,
+  referrer:        document.referrer,
+  page_url:        location.href,
+  time_on_page:    Math.round((Date.now() - pageLoadTime) / 1000),
+  scroll_depth:    maxScrollPct,
+  language:        navigator.language,
+  timezone:        Intl.DateTimeFormat().resolvedOptions().timeZone,
+  color_scheme:    matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+  sections_viewed: [...sectionsSet],
+});
+
+const url = '${BASE}/pwbunits/UNIT_NAME/track-engagement/';
+navigator.sendBeacon(url, new Blob([payload], { type: 'application/json' }));
+// OR: fetch(url, { method:'POST', body: payload, headers:{'Content-Type':'application/json'}, keepalive: true })`}</CodeBlock>
+                  </div>
+                  <ResBlock status={204}>{`// No body`}</ResBlock>
+                  <p className="text-xs text-slate-500">Throttled: 60 req/hour per IP. Bots filtered automatically. Data appears in your Analytics dashboard under "Visitor engagement".</p>
+                </EndpointCard>
+              </Sub>
+            </Section>
+
+            {/* Tracker Script */}
+            <Section id="tracker-script" icon={<Activity className="h-4 w-4 text-primary-400" />} title="Tracker Script">
+              <p className="text-slate-600 dark:text-slate-400">
+                Drop-in JavaScript snippet. Add it to any page that displays a PWBUnit to automatically
+                collect and send all engagement data — no framework or dependencies required.
+              </p>
+
+              <div className="rounded-xl border border-slate-200 dark:border-slate-700/50 overflow-hidden">
+                <div className="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700/50">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Add via script tag</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Hosted by the API — always up to date</p>
+                </div>
+                <div className="p-4">
+                  <CodeBlock>{`<script
+  src="${API_BASE_URL}/static/pwb-tracker.js"
+  data-unit="YOUR_UNIT_NAME"
+  data-api="${API_BASE_URL}"
+></script>`}</CodeBlock>
+                </div>
+              </div>
+
+              <div className="rounded-xl border border-slate-200 dark:border-slate-700/50 overflow-hidden">
+                <div className="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-700/50">
+                  <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">Or configure via global variable</p>
+                </div>
+                <div className="p-4">
+                  <CodeBlock>{`<script>
+  window.PWBConfig = {
+    unit: 'YOUR_UNIT_NAME',
+    api:  '${API_BASE_URL}',
+  };
+</script>
+<script src="${API_BASE_URL}/static/pwb-tracker.js"></script>`}</CodeBlock>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-sm font-semibold text-slate-800 dark:text-slate-200">What it tracks automatically</p>
+                <div className="grid sm:grid-cols-2 gap-2">
+                  {[
+                    ['Scroll depth', 'Max % of page scrolled during visit'],
+                    ['Time on page', 'Seconds from load to page leave'],
+                    ['Sections viewed', 'CV sections that entered the viewport (≥30%) via IntersectionObserver on [data-section] elements'],
+                    ['Link clicks', 'Text of links clicked — detects PDF, mailto:, and tel: separately'],
+                    ['Screen & viewport', 'window.screen.width/height and window.innerWidth/Height'],
+                    ['Language & timezone', 'navigator.language and Intl.DateTimeFormat timezone'],
+                    ['Color scheme', 'Light / dark preference via matchMedia'],
+                    ['Connection type', 'navigator.connection.effectiveType (4g/3g/2g/slow-2g)'],
+                  ].map(([title, desc]) => (
+                    <div key={title} className="flex gap-2 p-3 rounded-lg bg-slate-50 dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/50">
+                      <div className="h-1.5 w-1.5 rounded-full bg-primary-500 mt-2 shrink-0" />
+                      <div>
+                        <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">{title}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">{desc}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800/30 rounded-lg">
+                <AlertCircle className="h-4 w-4 text-blue-500 mt-0.5 shrink-0" />
+                <div className="text-xs text-blue-700 dark:text-blue-400 space-y-1">
+                  <p>For <code className="font-mono">[data-section]</code> tracking to work, add <code className="font-mono">data-section="experience"</code> attributes to your CV section elements (e.g. <code className="font-mono">data-section="about"</code>, <code className="font-mono">data-section="skills"</code>, etc.).</p>
+                  <p>Data is sent via <code className="font-mono">sendBeacon</code> on page leave, plus a keepalive <code className="font-mono">fetch</code> after 45 seconds for long sessions. Throttled at 60 req/hour per IP.</p>
+                </div>
+              </div>
             </Section>
 
             {/* Data Schemas */}
@@ -1121,8 +1323,10 @@ is_main   bool   optional (default false) — "true"/"1"/"yes" accepted`}</CodeB
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                     {[
-                      ['registration', '10 / hour', 'POST /user/register/,  POST /admin/register/'],
-                      ['token',        '20 / hour', 'POST /token/'],
+                      ['registration',      '10 / hour', 'POST /user/register/,  POST /admin/register/'],
+                      ['token',             '20 / hour', 'POST /token/'],
+                      ['track_view',        '60 / hour', 'POST /pwbunits/{unit}/track-view/'],
+                      ['track_engagement',  '60 / hour', 'POST /pwbunits/{unit}/track-engagement/'],
                     ].map(([scope, limit, paths]) => (
                       <tr key={scope} className="bg-white dark:bg-slate-900">
                         <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-300">{scope}</td>

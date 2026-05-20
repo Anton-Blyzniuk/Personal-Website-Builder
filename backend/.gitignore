@@ -28,6 +28,7 @@ staticfiles/
 
 # Collected static (if used)
 static/
+!static/pwb-tracker.js
 
 # Django cache
 *.cache
