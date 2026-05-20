@@ -255,6 +255,45 @@ class CustomSectionWriteSerializer(serializers.ModelSerializer):
         fields = ["title", "order", "items"]
 
 
+class PWBUnitEngagementSerializer(serializers.Serializer):
+    """Validates the payload from the browser engagement beacon. Every field is optional."""
+
+    session_id      = serializers.CharField(max_length=64,   required=False, allow_blank=True, default='')
+    referrer        = serializers.CharField(max_length=200,  required=False, allow_blank=True, default='')
+    page_url        = serializers.CharField(max_length=500,  required=False, allow_blank=True, default='')
+
+    time_on_page    = serializers.IntegerField(min_value=0, max_value=86400, required=False, allow_null=True, default=None)
+    scroll_depth    = serializers.IntegerField(min_value=0, max_value=100,   required=False, allow_null=True, default=None)
+
+    screen_width    = serializers.IntegerField(min_value=0, max_value=10000, required=False, allow_null=True, default=None)
+    screen_height   = serializers.IntegerField(min_value=0, max_value=10000, required=False, allow_null=True, default=None)
+    viewport_width  = serializers.IntegerField(min_value=0, max_value=10000, required=False, allow_null=True, default=None)
+    viewport_height = serializers.IntegerField(min_value=0, max_value=10000, required=False, allow_null=True, default=None)
+    language        = serializers.CharField(max_length=20,   required=False, allow_blank=True, default='')
+    timezone        = serializers.CharField(max_length=60,   required=False, allow_blank=True, default='')
+    color_scheme    = serializers.ChoiceField(
+        choices=['dark', 'light', 'unknown', ''],
+        required=False, allow_blank=True, default=''
+    )
+    connection_type = serializers.ChoiceField(
+        choices=['4g', '3g', '2g', 'slow-2g', 'unknown', ''],
+        required=False, allow_blank=True, default=''
+    )
+
+    pdf_downloaded  = serializers.BooleanField(required=False, default=False)
+    email_clicked   = serializers.BooleanField(required=False, default=False)
+    phone_clicked   = serializers.BooleanField(required=False, default=False)
+
+    links_clicked   = serializers.ListField(
+        child=serializers.CharField(max_length=100),
+        required=False, default=list, max_length=20
+    )
+    sections_viewed = serializers.ListField(
+        child=serializers.CharField(max_length=50),
+        required=False, default=list, max_length=20
+    )
+
+
 # ---------------------------------------------------------------------------
 # Helpers shared between create and update
 # ---------------------------------------------------------------------------

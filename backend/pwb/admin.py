@@ -7,7 +7,7 @@ from django.forms.models import BaseInlineFormSet
 from .models import (
     Award, Certification, CustomSection, CustomSectionItem,
     EducationUnit, ExperienceUnit, Language, Link, Photo,
-    PortfolioItem, PortfolioItemLink, PWBUnit, Skill,
+    PortfolioItem, PortfolioItemLink, PWBUnit, PWBUnitEngagement, Skill,
 )
 
 
@@ -117,3 +117,11 @@ class PWBUnitAdmin(nested_admin.NestedModelAdmin):
                 formset.save_m2m()
         else:
             super().save_formset(request, form, formset, change)
+
+
+@admin.register(PWBUnitEngagement)
+class PWBUnitEngagementAdmin(admin.ModelAdmin):
+    list_display    = ('pwb_unit', 'timestamp', 'device_type', 'time_on_page', 'scroll_depth', 'pdf_downloaded')
+    list_filter     = ('device_type', 'color_scheme', 'pdf_downloaded', 'email_clicked', 'phone_clicked')
+    search_fields   = ('pwb_unit__unit_name', 'session_id', 'referrer', 'timezone', 'language')
+    readonly_fields = ('timestamp',)

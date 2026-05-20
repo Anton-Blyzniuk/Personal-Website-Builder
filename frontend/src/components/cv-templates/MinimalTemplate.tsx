@@ -1,4 +1,3 @@
-import React from 'react';
 import type { PWBUnit } from '../../types/api';
 
 interface TemplateProps {
@@ -86,16 +85,16 @@ export function MinimalTemplate({ unit }: TemplateProps) {
 
         {/* About */}
         {unit.about && (
-          <>
+          <div data-section="about">
             <Divider />
             <SectionTitle>About</SectionTitle>
             <p className="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">{unit.about}</p>
-          </>
+          </div>
         )}
 
         {/* Experience */}
         {unit.experience_units.length > 0 && (
-          <>
+          <div data-section="experience">
             <Divider />
             <SectionTitle>Experience</SectionTitle>
             <div className="space-y-5">
@@ -122,12 +121,12 @@ export function MinimalTemplate({ unit }: TemplateProps) {
                   </div>
                 ))}
             </div>
-          </>
+          </div>
         )}
 
         {/* Education */}
         {unit.education_units.length > 0 && (
-          <>
+          <div data-section="education">
             <Divider />
             <SectionTitle>Education</SectionTitle>
             <div className="space-y-4">
@@ -154,12 +153,12 @@ export function MinimalTemplate({ unit }: TemplateProps) {
                   </div>
                 ))}
             </div>
-          </>
+          </div>
         )}
 
         {/* Skills */}
         {unit.skills.length > 0 && (
-          <>
+          <div data-section="skills">
             <Divider />
             <SectionTitle>Skills</SectionTitle>
             <div className="space-y-2">
@@ -172,23 +171,23 @@ export function MinimalTemplate({ unit }: TemplateProps) {
                 </p>
               ))}
             </div>
-          </>
+          </div>
         )}
 
         {/* Languages */}
         {unit.languages.length > 0 && (
-          <>
+          <div data-section="languages">
             <Divider />
             <SectionTitle>Languages</SectionTitle>
             <p className="text-sm text-slate-700 dark:text-slate-300">
               {unit.languages.map((l) => `${l.name} (${l.level})`).join(' · ')}
             </p>
-          </>
+          </div>
         )}
 
         {/* Certifications */}
         {unit.certifications.length > 0 && (
-          <>
+          <div data-section="certifications">
             <Divider />
             <SectionTitle>Certifications</SectionTitle>
             <div className="space-y-3">
@@ -215,12 +214,12 @@ export function MinimalTemplate({ unit }: TemplateProps) {
                   </div>
                 ))}
             </div>
-          </>
+          </div>
         )}
 
         {/* Awards */}
         {unit.awards.length > 0 && (
-          <>
+          <div data-section="awards">
             <Divider />
             <SectionTitle>Awards</SectionTitle>
             <div className="space-y-3">
@@ -244,12 +243,12 @@ export function MinimalTemplate({ unit }: TemplateProps) {
                   </div>
                 ))}
             </div>
-          </>
+          </div>
         )}
 
         {/* Portfolio */}
         {unit.portfolio_items.length > 0 && (
-          <>
+          <div data-section="portfolio">
             <Divider />
             <SectionTitle>Portfolio</SectionTitle>
             <div className="space-y-4">
@@ -283,12 +282,12 @@ export function MinimalTemplate({ unit }: TemplateProps) {
                   </div>
                 ))}
             </div>
-          </>
+          </div>
         )}
 
         {/* Custom Sections */}
         {customSectionsWithItems.map((cs, i) => (
-          <React.Fragment key={i}>
+          <div key={i} data-section={`custom-${cs.title.toLowerCase().replace(/\s+/g, '-')}`}>
             <Divider />
             <SectionTitle>{cs.title}</SectionTitle>
             <div className="space-y-3">
@@ -324,7 +323,7 @@ export function MinimalTemplate({ unit }: TemplateProps) {
                   </div>
                 ))}
             </div>
-          </React.Fragment>
+          </div>
         ))}
       </div>
     </div>

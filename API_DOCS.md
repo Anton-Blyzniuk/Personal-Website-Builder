@@ -532,6 +532,187 @@ Requires auth + ownership.
 
 ---
 
+### Analytics — Track View
+
+#### `POST /pwbunits/<unit_name>/track/`
+
+**Public.** No auth required. Throttled: **120 req/hour** per IP.
+
+Records a web page view for the unit. Called automatically by the CV template on page load.
+
+**Request** — `application/json`:
+```json
+{ "referrer": "https://linkedin.com" }
+```
+
+`referrer` is optional — `document.referrer` value. Falls back to HTTP `Referer` header.
+
+**Response 204:** recorded — no body.
+**Response 404:** unit not found.
+
+---
+
+### Analytics — Track Engagement
+
+#### `POST /pwbunits/<unit_name>/track-engagement/`
+
+**Public.** No auth required. Throttled: **60 req/hour** per IP.
+
+Called by the public CV template page via `navigator.sendBeacon` when the visitor
+leaves or after 45 seconds on page. Accepts rich browser-collected engagement data.
+All fields are **optional** — the endpoint accepts any partial subset.
+
+**When to call:**
+- On `pagehide` event (use `navigator.sendBeacon` — works even when the tab closes).
+- Optionally also after 45 s on page to capture partial data for bounced sessions.
+
+**Session ID:**
+Generate a UUID on CV page load, store it in `sessionStorage` under key `pwb_session`,
+and include it in every call. This lets the analytics query correlate engagement records
+with the matching view record.
+
+**Request** — `application/json`:
+```json
+{
+  "session_id":      "uuid-string",
+  "referrer":        "https://linkedin.com",
+  "page_url":        "https://app.example.com/cv/john-doe",
+  "time_on_page":    87,
+  "scroll_depth":    65,
+  "screen_width":    1920,
+  "screen_height":   1080,
+  "viewport_width":  1440,
+  "viewport_height": 900,
+  "language":        "en-US",
+  "timezone":        "Europe/Kyiv",
+  "color_scheme":    "dark",
+  "connection_type": "4g",
+  "pdf_downloaded":  false,
+  "email_clicked":   true,
+  "phone_clicked":   false,
+  "links_clicked":   ["GitHub", "LinkedIn"],
+  "sections_viewed": ["experience", "skills", "portfolio"]
+}
+```
+
+**Field reference:**
+
+| Field | Type | Constraints | Description |
+|-------|------|-------------|-------------|
+| `session_id` | string | max 64 chars | Client UUID from `sessionStorage`. Groups events from the same visit. |
+| `referrer` | string | max 200 chars | `document.referrer` value. |
+| `page_url` | string | max 500 chars | `window.location.href`. |
+| `time_on_page` | integer | 0–86400 | Seconds from page load to beacon send. |
+| `scroll_depth` | integer | 0–100 | Max scroll percentage reached. |
+| `screen_width` | integer | 0–10000 | `window.screen.width`. |
+| `screen_height` | integer | 0–10000 | `window.screen.height`. |
+| `viewport_width` | integer | 0–10000 | `window.innerWidth`. |
+| `viewport_height` | integer | 0–10000 | `window.innerHeight`. |
+| `language` | string | max 20 chars | `navigator.language` (e.g. `"en-US"`). |
+| `timezone` | string | max 60 chars | `Intl.DateTimeFormat().resolvedOptions().timeZone`. |
+| `color_scheme` | string | `dark`, `light`, `unknown` | Preferred color scheme. |
+| `connection_type` | string | `4g`, `3g`, `2g`, `slow-2g`, `unknown` | `navigator.connection?.effectiveType`. |
+| `pdf_downloaded` | boolean | — | Whether visitor clicked any PDF/attachment link. |
+| `email_clicked` | boolean | — | Whether visitor clicked a `mailto:` link. |
+| `phone_clicked` | boolean | — | Whether visitor clicked a `tel:` link. |
+| `links_clicked` | string[] | max 20 items, each max 100 chars | Text labels of external links clicked. |
+| `sections_viewed` | string[] | max 20 items, each max 50 chars | CV section identifiers that entered viewport (≥30% visible). Standard values: `experience`, `education`, `skills`, `portfolio`, `certifications`, `awards`, `languages`, `links`, `contact`. |
+
+**Response 204:** recorded — no body.
+**Response 400:** validation error.
+**Response 404:** unit not found.
+**Response 429:** rate limit exceeded.
+
+**Example — minimal call (just a ping):**
+```json
+{}
+```
+
+**Full JavaScript example using `navigator.sendBeacon`:**
+```js
+const payload = JSON.stringify({
+  session_id:      sessionStorage.getItem('pwb_session') ?? '',
+  referrer:        document.referrer,
+  page_url:        window.location.href,
+  time_on_page:    Math.round((Date.now() - PAGE_LOAD_TIME) / 1000),
+  scroll_depth:    MAX_SCROLL_DEPTH,
+  screen_width:    window.screen.width,
+  screen_height:   window.screen.height,
+  viewport_width:  window.innerWidth,
+  viewport_height: window.innerHeight,
+  language:        navigator.language,
+  timezone:        Intl.DateTimeFormat().resolvedOptions().timeZone,
+  color_scheme:    window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+  connection_type: navigator.connection?.effectiveType ?? 'unknown',
+  pdf_downloaded:  PDF_WAS_CLICKED,
+  email_clicked:   EMAIL_WAS_CLICKED,
+  phone_clicked:   PHONE_WAS_CLICKED,
+  links_clicked:   CLICKED_LINK_NAMES,
+  sections_viewed: VISIBLE_SECTIONS,
+});
+
+navigator.sendBeacon(
+  `/api/v1/pwbunits/${unitName}/track-engagement/`,
+  new Blob([payload], { type: 'application/json' })
+);
+```
+
+---
+
+### Analytics — Get Analytics
+
+#### `GET /pwbunits/<unit_name>/analytics/`
+
+Requires auth + ownership. Returns aggregated analytics for the unit.
+
+**Query params:**
+- `period` (int, 7–365, default 30): number of days to aggregate
+
+**Response 200:**
+```json
+{
+  "total_views": 142,
+  "unique_visitors": 98,
+  "web_views": 130,
+  "api_views": 12,
+  "all_time_total": 500,
+  "period_days": 30,
+  "views_over_time": [{"date": "2026-04-21", "total": 5, "web": 4, "api": 1}],
+  "by_source": {"web": 130, "api": 12},
+  "by_device": {"desktop": 80, "mobile": 50, "tablet": 12},
+  "top_referrers": [{"referrer": "linkedin.com", "count": 34}]
+}
+```
+
+The response also includes an `engagement` object with aggregated data from the
+`/track-engagement/` endpoint:
+
+```json
+{
+  "engagement": {
+    "total_sessions":    142,
+    "avg_time_on_page":  73,
+    "avg_scroll_depth":  68,
+    "pdf_downloads":     12,
+    "email_clicks":      8,
+    "phone_clicks":      3,
+    "top_sections":      [{"section": "experience", "count": 98}],
+    "top_links_clicked": [{"link": "GitHub", "count": 34}],
+    "by_language":       [{"language": "en-US", "count": 80}],
+    "by_timezone":       [{"timezone": "Europe/Kyiv", "count": 55}],
+    "by_color_scheme":   {"dark": 90, "light": 52},
+    "by_connection":     {"4g": 110, "3g": 32},
+    "top_resolutions":   [{"resolution": "1920x1080", "count": 45}]
+  }
+}
+```
+
+`engagement` is always present. All numeric sub-fields default to 0 or null when no engagement records exist.
+
+**Response 403:** not the owner.
+
+---
+
 ### Teammates
 
 Read-only for everyone. Write access is admin-only (not exposed via these endpoints).
@@ -876,6 +1057,8 @@ Returned by `GET /user/my-info/` and `PATCH /user/my-info/`.
 |-------|-------|-----------|
 | `registration` | 10/hour | `POST /user/register/`, `POST /admin/register/` |
 | `token` | 20/hour | `POST /token/` |
+| `track_view` | 120/hour | `POST /pwbunits/{unit_name}/track/` |
+| `track_engagement` | 60/hour | `POST /pwbunits/{unit_name}/track-engagement/` |
 
 Limits are per anonymous IP. Authenticated endpoints are not throttled by default.
 

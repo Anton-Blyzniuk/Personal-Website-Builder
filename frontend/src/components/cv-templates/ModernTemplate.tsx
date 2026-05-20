@@ -90,7 +90,7 @@ export function ModernTemplate({ unit }: TemplateProps) {
         <div className="px-6 space-y-6 mt-6">
           {/* About */}
           {unit.about && (
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
+            <div data-section="about" className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white border-l-4 border-blue-500 pl-3 mb-4">
                 About
               </h2>
@@ -100,7 +100,7 @@ export function ModernTemplate({ unit }: TemplateProps) {
 
           {/* Experience */}
           {unit.experience_units.length > 0 && (
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
+            <div data-section="experience" className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white border-l-4 border-blue-500 pl-3 mb-6">
                 Experience
               </h2>
@@ -139,7 +139,7 @@ export function ModernTemplate({ unit }: TemplateProps) {
 
           {/* Skills */}
           {unit.skills.length > 0 && (
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
+            <div data-section="skills" className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white border-l-4 border-blue-500 pl-3 mb-4">
                 Skills
               </h2>
@@ -169,7 +169,7 @@ export function ModernTemplate({ unit }: TemplateProps) {
 
           {/* Education */}
           {unit.education_units.length > 0 && (
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
+            <div data-section="education" className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white border-l-4 border-blue-500 pl-3 mb-4">
                 Education
               </h2>
@@ -205,7 +205,7 @@ export function ModernTemplate({ unit }: TemplateProps) {
 
           {/* Portfolio */}
           {unit.portfolio_items.length > 0 && (
-            <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
+            <div data-section="portfolio" className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
               <h2 className="text-lg font-bold text-slate-900 dark:text-white border-l-4 border-blue-500 pl-3 mb-4">
                 Portfolio
               </h2>
@@ -259,7 +259,7 @@ export function ModernTemplate({ unit }: TemplateProps) {
           {hasBottomRow && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {unit.certifications.length > 0 && (
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5">
+                <div data-section="certifications" className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5">
                   <h2 className="text-base font-bold text-slate-900 dark:text-white border-l-4 border-blue-500 pl-3 mb-3">
                     Certifications
                   </h2>
@@ -287,7 +287,7 @@ export function ModernTemplate({ unit }: TemplateProps) {
                 </div>
               )}
               {unit.awards.length > 0 && (
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5">
+                <div data-section="awards" className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5">
                   <h2 className="text-base font-bold text-slate-900 dark:text-white border-l-4 border-blue-500 pl-3 mb-3">
                     Awards
                   </h2>
@@ -308,7 +308,7 @@ export function ModernTemplate({ unit }: TemplateProps) {
                 </div>
               )}
               {unit.languages.length > 0 && (
-                <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5">
+                <div data-section="languages" className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5">
                   <h2 className="text-base font-bold text-slate-900 dark:text-white border-l-4 border-blue-500 pl-3 mb-3">
                     Languages
                   </h2>

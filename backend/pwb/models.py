@@ -314,3 +314,68 @@ class PWBUnitView(models.Model):
 
     def __str__(self):
         return f"{self.pwb_unit.unit_name} [{self.source}]"
+
+
+class PWBUnitEngagement(models.Model):
+    """Rich engagement snapshot sent by the browser when the visitor leaves the CV page."""
+
+    COLOR_DARK    = 'dark'
+    COLOR_LIGHT   = 'light'
+    COLOR_UNKNOWN = 'unknown'
+    COLOR_CHOICES = [
+        (COLOR_DARK,    'Dark'),
+        (COLOR_LIGHT,   'Light'),
+        (COLOR_UNKNOWN, 'Unknown'),
+    ]
+
+    CONN_4G      = '4g'
+    CONN_3G      = '3g'
+    CONN_2G      = '2g'
+    CONN_SLOW_2G = 'slow-2g'
+    CONN_UNKNOWN = 'unknown'
+    CONN_CHOICES = [
+        (CONN_4G,      '4G'),
+        (CONN_3G,      '3G'),
+        (CONN_2G,      '2G'),
+        (CONN_SLOW_2G, 'Slow 2G'),
+        (CONN_UNKNOWN, 'Unknown'),
+    ]
+
+    pwb_unit     = models.ForeignKey(PWBUnit, on_delete=models.CASCADE, related_name='engagements')
+    timestamp    = models.DateTimeField(default=timezone.now)
+
+    session_id   = models.CharField(max_length=64, blank=True)
+
+    ip_hash      = models.CharField(max_length=64, blank=True)
+    device_type  = models.CharField(max_length=10, blank=True)
+
+    referrer     = models.CharField(max_length=200, blank=True)
+    page_url     = models.CharField(max_length=500, blank=True)
+
+    time_on_page  = models.PositiveIntegerField(null=True, blank=True)
+    scroll_depth  = models.PositiveSmallIntegerField(null=True, blank=True)
+
+    screen_width    = models.PositiveSmallIntegerField(null=True, blank=True)
+    screen_height   = models.PositiveSmallIntegerField(null=True, blank=True)
+    viewport_width  = models.PositiveSmallIntegerField(null=True, blank=True)
+    viewport_height = models.PositiveSmallIntegerField(null=True, blank=True)
+    language        = models.CharField(max_length=20, blank=True)
+    timezone        = models.CharField(max_length=60, blank=True)
+    color_scheme    = models.CharField(max_length=10, choices=COLOR_CHOICES, blank=True)
+    connection_type = models.CharField(max_length=10, choices=CONN_CHOICES, blank=True)
+
+    pdf_downloaded  = models.BooleanField(default=False)
+    email_clicked   = models.BooleanField(default=False)
+    phone_clicked   = models.BooleanField(default=False)
+
+    links_clicked   = models.JSONField(default=list, blank=True)
+    sections_viewed = models.JSONField(default=list, blank=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+        indexes = [
+            models.Index(fields=['pwb_unit', 'timestamp'], name='pwb_eng_unit_time_idx'),
+        ]
+
+    def __str__(self):
+        return f"{self.pwb_unit.unit_name} engagement [{self.session_id[:8]}]"
