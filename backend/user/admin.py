@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import Group
 
-from .models import User
+from .models import PasswordResetCode, User
 
 admin.site.unregister(Group)
 
@@ -67,3 +67,10 @@ class UserAdmin(BaseUserAdmin):
     )
 
     search_fields = ("email", "first_name", "last_name")
+
+
+@admin.register(PasswordResetCode)
+class PasswordResetCodeAdmin(admin.ModelAdmin):
+    list_display = ("user", "created_at", "expires_at", "is_used")
+    list_filter = ("is_used",)
+    search_fields = ("user__email",)
