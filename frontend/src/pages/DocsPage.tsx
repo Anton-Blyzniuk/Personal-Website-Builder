@@ -22,7 +22,7 @@ Two methods, interchangeable on every protected endpoint.
 ### JWT
 POST ${base}/token/  →  {"access":"<jwt>","refresh":"<jwt>"}
   body: {"email":"string","password":"string"}
-  access lifetime: 120 min | refresh lifetime: 3 days
+  access lifetime: 15 min | refresh lifetime: 3 days
 POST ${base}/token/refresh/  →  {"access":"<new_jwt>"}
   body: {"refresh":"<token>"}
 Header on protected requests: Authorization: Bearer <access_token>
@@ -130,8 +130,8 @@ LinkWrite:
 
 LanguageWrite:
   name:str
-  level: "A1 Begginer"|"A2 Elementary"|"B1 Intermediate"|"B2 Upper-Intermediate"
-        |"C1 Advanced"|"C2 Advanced Proficy"|"Native"|"Bilingual"
+  level: "A1 Beginner"|"A2 Elementary"|"B1 Intermediate"|"B2 Upper-Intermediate"
+        |"C1 Advanced"|"C2 Advanced Proficiency"|"Native"|"Bilingual"
 
 ExperienceUnitWrite:
   title:str, organization:str|null, location:str|null, description:str|null
@@ -465,7 +465,7 @@ export function DocsPage() {
   // When inside PublicLayout the whole page scrolls and the header is ~68px tall.
   const sidebarSticky = isAuthenticated
     ? 'sticky top-0 max-h-screen overflow-y-auto py-8 scrollbar-none'
-    : 'sticky top-[73px] h-[calc(100vh-73px)] overflow-y-auto py-8 scrollbar-none';
+    : 'sticky top-[var(--header-height)] h-[calc(100vh-var(--header-height))] overflow-y-auto py-8 scrollbar-none';
   const mobileBarTop = isAuthenticated ? 'top-[52px]' : 'top-[65px]';
 
   const Layout = isAuthenticated ? DashboardLayout : PublicLayout;
@@ -647,7 +647,7 @@ units = requests.get('${BASE}/pwbunits/', headers=headers).json()`}
                 <div className="flex items-start gap-2 p-3 bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800/30 rounded-lg">
                   <AlertCircle className="h-4 w-4 text-amber-500 mt-0.5 shrink-0" />
                   <p className="text-xs text-amber-700 dark:text-amber-400">
-                    Access tokens expire after <strong>120 minutes</strong>. Refresh tokens last <strong>3 days</strong>.
+                    Access tokens expire after <strong>15 minutes</strong>. Refresh tokens last <strong>3 days</strong>.
                   </p>
                 </div>
               </div>
@@ -723,7 +723,7 @@ units = requests.get('${BASE}/pwbunits/', headers=api_headers).json()`}
                   <div className="p-4 space-y-3">
                     <ul className="text-sm text-slate-600 dark:text-slate-400 space-y-1">
                       <li>• Obtain via <code className="text-primary-500 text-xs">/token/</code> or <code className="text-primary-500 text-xs">/user/register/</code></li>
-                      <li>• Access token lifetime: <strong className="text-slate-800 dark:text-slate-200">120 minutes</strong></li>
+                      <li>• Access token lifetime: <strong className="text-slate-800 dark:text-slate-200">15 minutes</strong></li>
                       <li>• Refresh token lifetime: <strong className="text-slate-800 dark:text-slate-200">3 days</strong></li>
                     </ul>
                     <CodeBlock>{`Authorization: Bearer <access_token>`}</CodeBlock>

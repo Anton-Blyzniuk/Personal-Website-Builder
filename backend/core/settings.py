@@ -24,15 +24,7 @@ CSRF_TRUSTED_ORIGINS = [
     for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
     if origin.strip()
 ]
-_cors_origins = [
-    origin.strip()
-    for origin in os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",")
-    if origin.strip()
-]
-if _cors_origins:
-    CORS_ALLOWED_ORIGINS = _cors_origins
-else:
-    CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = True
 
 # Static files
 STATIC_URL = "static/"
@@ -165,8 +157,8 @@ SPECTACULAR_SETTINGS = {
     "ENUM_NAME_OVERRIDES": {
         "SkillLevelEnum": ["Beginner", "Intermediate", "Advanced", "Expert"],
         "LanguageLevelEnum": [
-            "A1 Begginer", "A2 Elementary", "B1 Intermediate",
-            "B2 Upper-Intermediate", "C1 Advanced", "C2 Advanced Proficy",
+            "A1 Beginner", "A2 Elementary", "B1 Intermediate",
+            "B2 Upper-Intermediate", "C1 Advanced", "C2 Advanced Proficiency",
             "Native", "Bilingual",
         ],
     },

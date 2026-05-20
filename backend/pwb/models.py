@@ -67,12 +67,12 @@ class Link(models.Model):
 
 class Language(models.Model):
     class Level(models.TextChoices):
-        A1_Begginer           = "A1 Begginer",           "A1 Begginer"
+        A1_Beginner           = "A1 Beginner",           "A1 Beginner"
         A2_Elementary         = "A2 Elementary",         "A2 Elementary"
         B1_Intermediate       = "B1 Intermediate",       "B1 Intermediate"
         B2_Upper_Intermediate = "B2 Upper-Intermediate", "B2 Upper-Intermediate"
         C1_Advanced           = "C1 Advanced",           "C1 Advanced"
-        C2_Advanced_Proficy   = "C2 Advanced Proficy",   "C2 Advanced Proficy"
+        C2_Advanced_Proficiency = "C2 Advanced Proficiency", "C2 Advanced Proficiency"
         Native                = "Native",                "Native"
         Bilingual             = "Bilingual",             "Bilingual"
 

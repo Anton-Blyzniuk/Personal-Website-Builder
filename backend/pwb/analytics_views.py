@@ -104,6 +104,11 @@ class TrackViewAPIView(APIView):
     )
     def post(self, request, unit_name):
         pwb_unit = get_object_or_404(PWBUnit, unit_name=unit_name)
+        # Prefer referrer from request body (client passes document.referrer);
+        # fall back to HTTP Referer header which may be stripped by browser policy.
+        body_referrer = request.data.get('referrer', '') if hasattr(request, 'data') else ''
+        if body_referrer:
+            request.META['HTTP_REFERER'] = body_referrer
         record_view(pwb_unit, request, source='web')
         return Response(status=status.HTTP_204_NO_CONTENT)
 

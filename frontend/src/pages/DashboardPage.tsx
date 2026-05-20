@@ -20,7 +20,7 @@ export function DashboardPage() {
   const [deleteTarget, setDeleteTarget] = useState<PWBUnitListItem | null>(null);
   const { user } = useAuthStore();
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, isError } = useQuery({
     queryKey: ['pwbunits'],
     queryFn: () => pwbUnitsApi.list(),
   });
@@ -65,6 +65,12 @@ export function DashboardPage() {
 
         {isLoading ? (
           <PageSpinner />
+        ) : isError ? (
+          <div className="flex flex-col items-center justify-center py-24 text-center animate-scale-in">
+            <p className="text-slate-500 dark:text-slate-500">
+              Failed to load your PWBUnits. Please refresh the page.
+            </p>
+          </div>
         ) : data?.results.length === 0 ? (
           /* Empty state */
           <div className="flex flex-col items-center justify-center py-24 text-center animate-scale-in">

@@ -6,12 +6,12 @@ import { Button } from '../../ui/Button';
 import type { PWBUnitFormData } from '../PWBUnitForm';
 
 const levelOptions = [
-  { value: 'A1 Begginer', label: 'A1 Beginner' },
+  { value: 'A1 Beginner', label: 'A1 Beginner' },
   { value: 'A2 Elementary', label: 'A2 Elementary' },
   { value: 'B1 Intermediate', label: 'B1 Intermediate' },
   { value: 'B2 Upper-Intermediate', label: 'B2 Upper-Intermediate' },
   { value: 'C1 Advanced', label: 'C1 Advanced' },
-  { value: 'C2 Advanced Proficy', label: 'C2 Advanced Proficiency' },
+  { value: 'C2 Advanced Proficiency', label: 'C2 Advanced Proficiency' },
   { value: 'Native', label: 'Native' },
   { value: 'Bilingual', label: 'Bilingual' },
 ];

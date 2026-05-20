@@ -192,7 +192,7 @@ export function CertificationsSection({
         variant="secondary"
         size="sm"
         icon={<Plus className="h-4 w-4" />}
-        onClick={() => append({ _id: undefined, _image: null, name: '', issuing_organization: '', issue_date: null, expiry_date: null, credential_id: null, credential_url: null, order: fields.length })}
+        onClick={() => append({ _id: undefined, _image: null, name: '', issuing_organization: '', issue_date: '', expiry_date: '', credential_id: '', credential_url: '', order: fields.length })}
       >
         Add certification
       </Button>
