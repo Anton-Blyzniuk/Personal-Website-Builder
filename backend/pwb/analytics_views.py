@@ -26,9 +26,13 @@ class TrackViewThrottle(AnonRateThrottle):
 # ---------------------------------------------------------------------------
 
 def _get_client_ip(request) -> str:
-    forwarded = request.META.get('HTTP_X_FORWARDED_FOR', '')
-    if forwarded:
-        return forwarded.split(',')[0].strip()
+    import os
+    # Only trust X-Forwarded-For when running behind a trusted proxy (CDN/load balancer).
+    # Set TRUST_PROXY_IP=1 in env when deployed on Heroku, Railway, etc.
+    if os.environ.get("TRUST_PROXY_IP", "").lower() in ("1", "true"):
+        forwarded = request.META.get('HTTP_X_FORWARDED_FOR', '')
+        if forwarded:
+            return forwarded.split(',')[0].strip()
     return request.META.get('REMOTE_ADDR', '')
 
 
@@ -71,12 +75,15 @@ def _extract_domain(referrer: str) -> str:
 def record_view(pwb_unit: PWBUnit, request, source: str) -> None:
     ip = _get_client_ip(request)
     ua = request.META.get('HTTP_USER_AGENT', '')
+    device_type = _detect_device(ua)
+    if device_type == 'bot':
+        return
     referrer_raw = request.META.get('HTTP_REFERER', '')
     PWBUnitView.objects.create(
         pwb_unit=pwb_unit,
         source=source,
         ip_hash=_hash_ip(ip) if ip else '',
-        device_type=_detect_device(ua),
+        device_type=device_type,
         referrer=_extract_domain(referrer_raw),
     )
 

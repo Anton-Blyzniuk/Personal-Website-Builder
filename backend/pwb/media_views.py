@@ -1,5 +1,8 @@
+import io
+
 from django.shortcuts import get_object_or_404
 from drf_spectacular.utils import OpenApiResponse, extend_schema
+from PIL import Image, UnidentifiedImageError
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.parsers import FormParser, MultiPartParser
@@ -63,6 +66,15 @@ class PhotoListCreateView(_OwnedUnitMixin, APIView):
         if image_file.content_type not in _ALLOWED_IMAGE_TYPES:
             return Response(
                 {"image": "Unsupported format. Use JPEG, PNG, WebP or GIF."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            image_file.seek(0)
+            Image.open(io.BytesIO(image_file.read())).verify()
+            image_file.seek(0)
+        except (UnidentifiedImageError, Exception):
+            return Response(
+                {"image": "File is not a valid image."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
@@ -136,6 +148,10 @@ class PDFResumeView(_OwnedUnitMixin, APIView):
             return Response({"file": "This field is required."}, status=status.HTTP_400_BAD_REQUEST)
         if pdf_file.content_type != "application/pdf":
             return Response({"file": "Only PDF files are accepted."}, status=status.HTTP_400_BAD_REQUEST)
+        pdf_file.seek(0)
+        if pdf_file.read(4) != b'%PDF':
+            return Response({"file": "File is not a valid PDF."}, status=status.HTTP_400_BAD_REQUEST)
+        pdf_file.seek(0)
 
         pwb_unit.pdf_resume = pdf_file
         pwb_unit.save(update_fields=["pdf_resume"])
@@ -190,6 +206,15 @@ class EducationUnitImageView(_OwnedUnitMixin, APIView):
                 {"image": "Unsupported format. Use JPEG, PNG, WebP or GIF."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        try:
+            image_file.seek(0)
+            Image.open(io.BytesIO(image_file.read())).verify()
+            image_file.seek(0)
+        except (UnidentifiedImageError, Exception):
+            return Response(
+                {"image": "File is not a valid image."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         edu_unit.image = image_file
         edu_unit.save(update_fields=["image"])
@@ -240,6 +265,15 @@ class PortfolioItemImageView(_OwnedUnitMixin, APIView):
                 {"image": "Unsupported format. Use JPEG, PNG, WebP or GIF."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+        try:
+            image_file.seek(0)
+            Image.open(io.BytesIO(image_file.read())).verify()
+            image_file.seek(0)
+        except (UnidentifiedImageError, Exception):
+            return Response(
+                {"image": "File is not a valid image."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         item.image = image_file
         item.save(update_fields=["image"])
@@ -288,6 +322,15 @@ class CertificationImageView(_OwnedUnitMixin, APIView):
         if image_file.content_type not in _ALLOWED_IMAGE_TYPES:
             return Response(
                 {"image": "Unsupported format. Use JPEG, PNG, WebP or GIF."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            image_file.seek(0)
+            Image.open(io.BytesIO(image_file.read())).verify()
+            image_file.seek(0)
+        except (UnidentifiedImageError, Exception):
+            return Response(
+                {"image": "File is not a valid image."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 

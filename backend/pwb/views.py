@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import transaction
 from django.db.models import Prefetch
 from drf_spectacular.utils import extend_schema
@@ -102,7 +103,7 @@ class PWBUnitViewSet(
                 count = PWBUnit.objects.filter(owner=request.user).count()
                 if count >= limit:
                     return Response(
-                        {"detail": f"Your {request.user.get_plan_display()} plan allows up to {limit} PWBUnit(s). Contact bliznukantonmain@gmail.com to upgrade."},
+                        {"detail": f"Your {request.user.get_plan_display()} plan allows up to {limit} PWBUnit(s). Contact {settings.UPGRADE_CONTACT_EMAIL} to upgrade."},
                         status=status.HTTP_403_FORBIDDEN,
                     )
             self.perform_create(serializer)

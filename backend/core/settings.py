@@ -10,16 +10,29 @@ load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ["SECRET_KEY"]
 DEBUG = os.environ.get("DEBUG", "False").lower() == "true"
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get("ALLOWED_HOSTS", "localhost").split(",")
+    if host.strip()
+]
 AUTH_USER_MODEL = "user.User"
 ADMIN_REGISTRATION_SECRET_CODE = os.environ["ADMIN_REGISTRATION_SECRET_CODE"]
+UPGRADE_CONTACT_EMAIL = os.environ.get("UPGRADE_CONTACT_EMAIL", "bliznukantonmain@gmail.com")
 
 CSRF_TRUSTED_ORIGINS = [
     origin.strip()
     for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
     if origin.strip()
 ]
-CORS_ALLOW_ALL_ORIGINS = True
+_cors_origins = [
+    origin.strip()
+    for origin in os.environ.get("CORS_ALLOWED_ORIGINS", "").split(",")
+    if origin.strip()
+]
+if _cors_origins:
+    CORS_ALLOWED_ORIGINS = _cors_origins
+else:
+    CORS_ALLOW_ALL_ORIGINS = True
 
 # Static files
 STATIC_URL = "static/"
@@ -129,8 +142,13 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_PAGINATION_CLASS": "pwb.pagination.StandardPagination",
     "PAGE_SIZE": 20,
-    "DEFAULT_THROTTLE_CLASSES": [],
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
     "DEFAULT_THROTTLE_RATES": {
+        "anon":         "300/hour",
+        "user":         "1000/hour",
         "registration": "10/hour",
         "token":        "20/hour",
         "api_key":      "5/hour",
@@ -155,9 +173,9 @@ SPECTACULAR_SETTINGS = {
 }
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=120),
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=15),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=3),
     "AUTH_HEADER_TYPES": ("Bearer",),
     "ROTATE_REFRESH_TOKENS": False,
-    "BLACKLIST_AFTER_ROTATION": True,
+    "BLACKLIST_AFTER_ROTATION": False,
 }
