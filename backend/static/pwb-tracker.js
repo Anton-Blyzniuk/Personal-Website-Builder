@@ -66,6 +66,7 @@
     if (pct > maxScroll) maxScroll = Math.min(pct, 100);
   }
   window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll(); // capture depth for pages that fit in viewport without scrolling
 
   /* ── Section visibility (IntersectionObserver) ─────────────────────────── */
   if (typeof IntersectionObserver !== 'undefined') {
@@ -89,7 +90,9 @@
     var href = anchor.href || '';
     var text = (anchor.textContent || anchor.title || '').trim().slice(0, 100);
 
-    if (href.endsWith('.pdf') || href.includes('fl_attachment') || anchor.download) pdfClicked = true;
+    var isPdf = anchor.download || href.includes('fl_attachment');
+    if (!isPdf) { try { isPdf = new URL(href, location.href).pathname.toLowerCase().endsWith('.pdf'); } catch (_) {} }
+    if (isPdf) pdfClicked = true;
     if (href.startsWith('mailto:')) emailClicked = true;
     if (href.startsWith('tel:'))    phoneClicked = true;
     if (text && links.length < 20 && links.indexOf(text) === -1) links.push(text);
@@ -150,10 +153,11 @@
 
   window.addEventListener('pagehide', flush);
 
-  // Early flush after 45 s (captures partial data for long sessions)
+  // Early flush after 45 s (captures partial data for long sessions).
+  // Does NOT set flushed=true — pagehide will fire again with the final complete payload.
+  // The backend uses update_or_create on session_id so duplicate records are merged.
   setTimeout(function () {
     if (flushed) return;
-    flushed = true; // mark true so pagehide won't double-send
     fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

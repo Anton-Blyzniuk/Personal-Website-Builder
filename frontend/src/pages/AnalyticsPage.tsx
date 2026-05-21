@@ -140,7 +140,7 @@ function AnalyticsContent({ unitName, period }: { unitName: string; period: numb
           ))}
         </div>
         <div className="h-64 rounded-xl bg-slate-200 dark:bg-slate-800" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
           <div className="h-48 rounded-xl bg-slate-200 dark:bg-slate-800" />
           <div className="h-48 rounded-xl bg-slate-200 dark:bg-slate-800" />
         </div>
@@ -248,7 +248,7 @@ function AnalyticsContent({ unitName, period }: { unitName: string; period: numb
       </div>
 
       {/* Source + Device side by side */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
         {/* Source breakdown */}
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
           <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Traffic source</p>
@@ -382,7 +382,7 @@ function AnalyticsContent({ unitName, period }: { unitName: string; period: numb
 
           {/* Sections viewed + Links clicked */}
           {(data.engagement.top_sections.length > 0 || data.engagement.top_links_clicked.length > 0) && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
               {data.engagement.top_sections.length > 0 && (
                 <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
                   <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Sections viewed</p>
@@ -428,7 +428,7 @@ function AnalyticsContent({ unitName, period }: { unitName: string; period: numb
 
           {/* Language + Timezone breakdown */}
           {(data.engagement.by_language.length > 0 || data.engagement.by_timezone.length > 0) && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
               {data.engagement.by_language.length > 0 && (
                 <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
                   <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Languages</p>

@@ -348,9 +348,7 @@ class TrackEngagementAPIView(APIView):
 
         referrer = data['referrer'] or _extract_domain(request.META.get('HTTP_REFERER', ''))
 
-        PWBUnitEngagement.objects.create(
-            pwb_unit        = pwb_unit,
-            session_id      = data['session_id'],
+        eng_fields = dict(
             ip_hash         = _hash_ip(ip) if ip else '',
             device_type     = device,
             referrer        = referrer[:200],
@@ -371,5 +369,20 @@ class TrackEngagementAPIView(APIView):
             links_clicked   = data['links_clicked'],
             sections_viewed = data['sections_viewed'],
         )
+
+        session_id = data['session_id']
+        if session_id:
+            # Upsert: early-flush and pagehide both send the same session_id.
+            # Always overwrite with the latest payload so the final beacon
+            # (which has the most complete click/scroll data) wins.
+            PWBUnitEngagement.objects.update_or_create(
+                pwb_unit   = pwb_unit,
+                session_id = session_id,
+                defaults   = eng_fields,
+            )
+        else:
+            PWBUnitEngagement.objects.create(
+                pwb_unit=pwb_unit, session_id='', **eng_fields
+            )
 
         return Response(status=status.HTTP_204_NO_CONTENT)
