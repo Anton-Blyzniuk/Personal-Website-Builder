@@ -369,10 +369,10 @@ export function LandingPage() {
       {/* ═══════════════════════════════════════════════════════════════════════
           HOW IT WORKS
       ═══════════════════════════════════════════════════════════════════════ */}
-      <section className="py-20 sm:py-28 px-4 sm:px-6">
+      <section className="py-14 sm:py-20 px-4 sm:px-6">
         <div className="max-w-5xl mx-auto">
 
-          <div className="text-center mb-16 sm:mb-20">
+          <div className="text-center mb-12 sm:mb-16">
             <p className="text-xs font-bold text-primary-500 uppercase tracking-[0.2em] mb-3">How it works</p>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               From zero to published in three steps
@@ -384,10 +384,10 @@ export function LandingPage() {
 
           <div className="grid sm:grid-cols-3 gap-10 relative">
             {/* Connector line — desktop only, sits behind the icons */}
-            <div className="hidden sm:block absolute top-10 left-20 right-[calc((100%-5rem)/3)] h-px bg-gradient-to-r from-primary-400/40 via-violet-400/50 to-cyan-400/40" />
+            <div className="hidden sm:block absolute top-10 left-[calc((100%-5rem)/6)] right-[calc((100%-5rem)/6)] h-px bg-gradient-to-r from-primary-400/40 via-violet-400/50 to-cyan-400/40" />
 
             {steps.map((s, i) => (
-              <div key={s.title} className="flex flex-col items-center sm:items-start text-center sm:text-left">
+              <div key={s.title} className="flex flex-col items-center text-center">
                 <div className={`relative h-20 w-20 rounded-2xl bg-gradient-to-br ${s.gradient} flex items-center justify-center text-white mb-6 ${s.glow} shrink-0`}>
                   {s.icon}
                   <span className="absolute -top-3 -right-3 h-7 w-7 rounded-full bg-white dark:bg-slate-900 border-2 border-slate-100 dark:border-slate-800 text-slate-900 dark:text-slate-100 text-xs font-extrabold flex items-center justify-center shadow-md">
@@ -405,10 +405,10 @@ export function LandingPage() {
       {/* ═══════════════════════════════════════════════════════════════════════
           FEATURES
       ═══════════════════════════════════════════════════════════════════════ */}
-      <section className="py-20 sm:py-24 px-4 sm:px-6 bg-slate-100/70 dark:bg-slate-900/50 border-y border-slate-200/60 dark:border-slate-800/60">
+      <section className="py-14 sm:py-20 px-4 sm:px-6 bg-slate-100/70 dark:bg-slate-900/50 border-y border-slate-200/60 dark:border-slate-800/60">
         <div className="max-w-5xl mx-auto">
 
-          <div className="text-center mb-12 sm:mb-16">
+          <div className="text-center mb-10 sm:mb-14">
             <p className="text-xs font-bold text-primary-500 uppercase tracking-[0.2em] mb-3">Features</p>
             <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
               Everything in one place
@@ -444,7 +444,7 @@ export function LandingPage() {
       {/* ═══════════════════════════════════════════════════════════════════════
           API PREVIEW
       ═══════════════════════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden py-20 sm:py-28 px-4 sm:px-6">
+      <section className="relative overflow-hidden py-14 sm:py-20 px-4 sm:px-6">
         <div className="absolute inset-0 bg-grid-dark opacity-40 dark:opacity-60 pointer-events-none" />
         <div className="absolute top-1/2 left-0 h-[400px] w-[400px] bg-primary-500/[0.06] dark:bg-primary-500/[0.10] rounded-full blur-3xl pointer-events-none -translate-y-1/2" />
 
@@ -529,7 +529,7 @@ export function LandingPage() {
       {/* ═══════════════════════════════════════════════════════════════════════
           CTA
       ═══════════════════════════════════════════════════════════════════════ */}
-      <section className="relative overflow-hidden py-24 sm:py-32 px-4 sm:px-6">
+      <section className="relative overflow-hidden py-20 sm:py-28 px-4 sm:px-6">
         <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-[#0a0814] to-slate-950" />
         <div className="absolute inset-0 bg-grid-dark opacity-60" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 h-[500px] w-[700px] bg-primary-600/[0.18] rounded-full blur-[90px] pointer-events-none" />

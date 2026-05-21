@@ -1,4 +1,5 @@
-import type { PWBUnit } from '../../types/api';
+import { Mail, Phone, MapPin, ExternalLink, Download, Send, Globe, Github, Linkedin } from 'lucide-react';
+import type { PWBUnit, Link } from '../../types/api';
 
 interface TemplateProps {
   unit: PWBUnit;
@@ -11,17 +12,42 @@ function formatDate(dateStr: string | null | undefined, fallback = 'Present'): s
   return `${months[parseInt(parts[1], 10) - 1]} ${parts[0]}`;
 }
 
+function getLinkIcon(link: Link, size = 16) {
+  const name = link.name.toLowerCase();
+  const url = link.url.toLowerCase();
+  if (name.includes('github') || url.includes('github.com')) return <Github size={size} />;
+  if (name.includes('linkedin') || url.includes('linkedin.com')) return <Linkedin size={size} />;
+  if (name.includes('telegram') || url.includes('t.me')) return <Send size={size} />;
+  return <Globe size={size} />;
+}
+
 const CAT_COLORS = [
-  'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100',
-  'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-100',
-  'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-100',
-  'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-100',
-  'bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-100',
+  'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
+  'bg-violet-100 text-violet-700 dark:bg-violet-900/40 dark:text-violet-300',
+  'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300',
+  'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-300',
+  'bg-pink-100 text-pink-700 dark:bg-pink-900/40 dark:text-pink-300',
+  'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/40 dark:text-cyan-300',
 ];
+
+function SectionHeading({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-4 mb-8">
+      <h2 className="text-2xl font-bold text-slate-900 dark:text-slate-100 shrink-0">{children}</h2>
+      <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800" />
+    </div>
+  );
+}
 
 export function ModernTemplate({ unit }: TemplateProps) {
   const mainPhoto = unit.photos.find((p) => p.is_main) ?? unit.photos[0];
-  const initial = unit.first_name[0]?.toUpperCase() ?? '?';
+  const initial = `${unit.first_name[0] ?? ''}${unit.last_name[0] ?? ''}`.toUpperCase();
+
+  const yearsExp =
+    unit.experience_units.length > 0
+      ? new Date().getFullYear() -
+        Math.min(...unit.experience_units.map((e) => parseInt(e.from_date.split('-')[0], 10)))
+      : null;
 
   const skillsByCategory = unit.skills
     .slice()
@@ -38,346 +64,510 @@ export function ModernTemplate({ unit }: TemplateProps) {
     catColorMap[cat] = CAT_COLORS[i % CAT_COLORS.length];
   });
 
-  const hasBottomRow =
-    unit.certifications.length > 0 || unit.awards.length > 0 || unit.languages.length > 0;
+  const navLinks = [
+    unit.about && { id: 'about', label: 'About' },
+    unit.skills.length > 0 && { id: 'skills', label: 'Skills' },
+    unit.experience_units.length > 0 && { id: 'experience', label: 'Experience' },
+    unit.portfolio_items.length > 0 && { id: 'projects', label: 'Projects' },
+    (unit.certifications.length > 0 || unit.awards.length > 0) && { id: 'achievements', label: 'Achievements' },
+  ].filter(Boolean) as { id: string; label: string }[];
+
+  const scrollTo = (id: string) =>
+    document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+
+  const hasAchievements = unit.certifications.length > 0 || unit.awards.length > 0;
 
   return (
-    <div className="cv-page bg-slate-50 dark:bg-slate-900 min-h-screen">
-      <div className="max-w-3xl mx-auto pb-12">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 sm:px-8 py-10 sm:py-12">
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 sm:gap-6">
-            <div className="min-w-0 flex-1">
-              <h1 className="text-3xl sm:text-4xl font-bold break-words">{unit.first_name} {unit.last_name}</h1>
-              <p className="text-blue-100 mt-2 text-lg sm:text-xl">{unit.headline}</p>
-              <div className="flex flex-wrap gap-x-4 gap-y-1 mt-4 text-sm text-blue-100">
-                <span>{unit.email}</span>
-                {unit.phone && <span>{unit.phone}</span>}
-                {unit.location && <span>{unit.location}</span>}
-              </div>
-              {unit.links.length > 0 && (
-                <div className="flex flex-wrap gap-3 mt-3">
-                  {unit.links.map((l, i) => (
-                    <a
-                      key={i}
-                      href={l.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-white underline underline-offset-2 hover:text-blue-200"
-                    >
-                      {l.name}
-                    </a>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="shrink-0 self-start sm:self-auto">
-              {mainPhoto ? (
-                <img
-                  src={mainPhoto.image}
-                  alt={unit.first_name}
-                  className="h-20 w-20 sm:h-24 sm:w-24 rounded-full object-cover border-4 border-white/30"
-                />
-              ) : (
-                <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-white/20 flex items-center justify-center text-white text-3xl font-bold">
-                  {initial}
-                </div>
-              )}
-            </div>
+    <div className="cv-page bg-white dark:bg-slate-950 min-h-screen">
+
+      {/* ── Nav ───────────────────────────────────────────────────────────── */}
+      <nav className="sticky top-0 z-40 bg-slate-900/95 backdrop-blur-sm border-b border-white/5">
+        <div className="max-w-5xl mx-auto px-4 sm:px-8 flex items-center justify-between h-14">
+          <span className="font-bold text-white text-sm tracking-tight">
+            {unit.first_name} {unit.last_name}
+          </span>
+          <div className="hidden sm:flex items-center gap-6">
+            {navLinks.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => scrollTo(s.id)}
+                className="text-sm text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                {s.label}
+              </button>
+            ))}
+            <button
+              onClick={() => scrollTo('contact')}
+              className="text-sm text-white bg-blue-600 hover:bg-blue-500 px-3 py-1.5 rounded-lg transition-colors cursor-pointer font-medium"
+            >
+              Contact
+            </button>
           </div>
         </div>
+      </nav>
 
-        <div className="px-6 space-y-6 mt-6">
-          {/* About */}
-          {unit.about && (
-            <div data-section="about" className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white border-l-4 border-blue-500 pl-3 mb-4">
-                About
-              </h2>
-              <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{unit.about}</p>
-            </div>
-          )}
+      {/* ── Hero ──────────────────────────────────────────────────────────── */}
+      <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white py-16 sm:py-24 px-4 sm:px-8">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-start gap-10 sm:gap-14">
 
-          {/* Experience */}
-          {unit.experience_units.length > 0 && (
-            <div data-section="experience" className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white border-l-4 border-blue-500 pl-3 mb-6">
-                Experience
-              </h2>
-              <div className="relative pl-6 space-y-6">
-                <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-slate-200 dark:bg-slate-700" />
-                {unit.experience_units
-                  .slice()
-                  .sort((a, b) => a.order - b.order)
-                  .map((e) => (
-                    <div key={e.id} className="relative">
-                      <div className="absolute -left-[25px] top-1 w-3 h-3 rounded-full bg-blue-500" />
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="font-semibold text-slate-900 dark:text-white">{e.title}</p>
-                          {e.organization && (
-                            <p className="text-slate-500 dark:text-slate-400 text-sm">
-                              {e.organization}
-                              {e.location ? ` · ${e.location}` : ''}
-                            </p>
-                          )}
-                        </div>
-                        <p className="text-xs text-slate-400 dark:text-slate-500 shrink-0">
-                          {formatDate(e.from_date)} – {formatDate(e.to_date)}
-                        </p>
-                      </div>
-                      {e.description && (
-                        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
-                          {e.description}
-                        </p>
-                      )}
-                    </div>
-                  ))}
+          {/* Photo */}
+          <div className="shrink-0">
+            {mainPhoto ? (
+              <img
+                src={mainPhoto.image}
+                alt={unit.first_name}
+                className="h-36 w-36 sm:h-44 sm:w-44 rounded-2xl object-cover border-2 border-white/10 shadow-2xl"
+              />
+            ) : (
+              <div className="h-36 w-36 sm:h-44 sm:w-44 rounded-2xl bg-slate-700 border-2 border-white/10 flex items-center justify-center text-3xl font-bold text-slate-300 shadow-2xl">
+                {initial}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* Skills */}
-          {unit.skills.length > 0 && (
-            <div data-section="skills" className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white border-l-4 border-blue-500 pl-3 mb-4">
-                Skills
-              </h2>
-              <div className="space-y-3">
-                {Object.entries(skillsByCategory).map(([cat, skills]) => (
-                  <div key={cat}>
-                    {Object.keys(skillsByCategory).length > 1 && (
-                      <p className="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
-                        {cat}
+          {/* Copy */}
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-semibold uppercase tracking-widest text-blue-400 mb-2">
+              {unit.location ?? 'Available for work'}
+            </p>
+            <h1 className="text-4xl sm:text-5xl font-bold leading-tight break-words">
+              {unit.first_name} {unit.last_name}
+            </h1>
+            <p className="mt-3 text-xl text-slate-300">{unit.headline}</p>
+
+            {/* Stats */}
+            {(yearsExp !== null || unit.portfolio_items.length > 0 || unit.certifications.length > 0) && (
+              <div className="flex flex-wrap gap-8 mt-6 py-4 border-t border-b border-white/10">
+                {yearsExp !== null && yearsExp > 0 && (
+                  <div>
+                    <p className="text-3xl font-bold text-white">{yearsExp}+</p>
+                    <p className="text-xs text-slate-400 uppercase tracking-wide mt-0.5">Years exp.</p>
+                  </div>
+                )}
+                {unit.portfolio_items.length > 0 && (
+                  <div>
+                    <p className="text-3xl font-bold text-white">{unit.portfolio_items.length}+</p>
+                    <p className="text-xs text-slate-400 uppercase tracking-wide mt-0.5">Projects</p>
+                  </div>
+                )}
+                {unit.certifications.length > 0 && (
+                  <div>
+                    <p className="text-3xl font-bold text-white">{unit.certifications.length}</p>
+                    <p className="text-xs text-slate-400 uppercase tracking-wide mt-0.5">Certs</p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Contact row */}
+            <div className="flex flex-wrap gap-x-5 gap-y-1.5 mt-5 text-sm text-slate-400">
+              <a
+                href={`mailto:${unit.email}`}
+                className="flex items-center gap-1.5 hover:text-blue-300 transition-colors"
+              >
+                <Mail size={14} /> {unit.email}
+              </a>
+              {unit.phone && (
+                <a
+                  href={`tel:${unit.phone}`}
+                  className="flex items-center gap-1.5 hover:text-blue-300 transition-colors"
+                >
+                  <Phone size={14} /> {unit.phone}
+                </a>
+              )}
+              {unit.location && (
+                <span className="flex items-center gap-1.5">
+                  <MapPin size={14} /> {unit.location}
+                </span>
+              )}
+            </div>
+
+            {/* Social + CV buttons */}
+            {(unit.links.length > 0 || unit.pdf_resume) && (
+              <div className="flex flex-wrap gap-2 mt-5">
+                {unit.links.map((l, i) => (
+                  <a
+                    key={i}
+                    href={l.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-sm text-slate-200 transition-colors border border-white/10"
+                  >
+                    {getLinkIcon(l, 15)}
+                    <span>{l.name}</span>
+                  </a>
+                ))}
+                {unit.pdf_resume && (
+                  <a
+                    href={unit.pdf_resume}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-sm text-white font-semibold transition-colors"
+                  >
+                    <Download size={15} /> Download CV
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Main content ──────────────────────────────────────────────────── */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-8 py-16 space-y-20">
+
+        {/* About */}
+        {unit.about && (
+          <section id="about" data-section="about">
+            <SectionHeading>About</SectionHeading>
+            <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-lg max-w-3xl">
+              {unit.about}
+            </p>
+          </section>
+        )}
+
+        {/* Skills */}
+        {unit.skills.length > 0 && (
+          <section id="skills" data-section="skills">
+            <SectionHeading>Skills</SectionHeading>
+            <div className="space-y-6">
+              {Object.entries(skillsByCategory).map(([cat, skills]) => (
+                <div key={cat}>
+                  {Object.keys(skillsByCategory).length > 1 && (
+                    <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-3">
+                      {cat}
+                    </p>
+                  )}
+                  <div className="flex flex-wrap gap-2">
+                    {skills.map((s, i) => (
+                      <span
+                        key={i}
+                        className={`px-3.5 py-1.5 rounded-full text-sm font-medium ${catColorMap[cat]}`}
+                      >
+                        {s.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Experience */}
+        {unit.experience_units.length > 0 && (
+          <section id="experience" data-section="experience">
+            <SectionHeading>Experience</SectionHeading>
+            <div className="relative pl-7 space-y-10">
+              <div className="absolute left-0 top-2 bottom-2 w-px bg-slate-200 dark:bg-slate-800" />
+              {unit.experience_units
+                .slice()
+                .sort((a, b) => a.order - b.order)
+                .map((e) => (
+                  <div key={e.id} className="relative">
+                    <div className="absolute -left-[29px] top-1.5 w-3.5 h-3.5 rounded-full bg-blue-500 border-2 border-white dark:border-slate-950 shadow" />
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 mb-2">
+                      <div>
+                        <p className="font-bold text-slate-900 dark:text-slate-100 text-lg leading-snug">
+                          {e.title}
+                        </p>
+                        {e.organization && (
+                          <p className="text-blue-600 dark:text-blue-400 font-medium">
+                            {e.organization}
+                            {e.location ? ` · ${e.location}` : ''}
+                          </p>
+                        )}
+                      </div>
+                      <p className="text-sm text-slate-400 dark:text-slate-500 shrink-0 pt-0.5">
+                        {formatDate(e.from_date)} – {formatDate(e.to_date)}
                       </p>
-                    )}
-                    <div className="flex flex-wrap gap-2">
-                      {skills.map((s, i) => (
-                        <span
-                          key={i}
-                          className={`rounded-full px-3 py-1 text-sm font-medium ${catColorMap[cat]}`}
-                        >
-                          {s.name}
-                        </span>
-                      ))}
                     </div>
+                    {e.description && (
+                      <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{e.description}</p>
+                    )}
                   </div>
                 ))}
-              </div>
             </div>
-          )}
+          </section>
+        )}
 
-          {/* Education */}
-          {unit.education_units.length > 0 && (
-            <div data-section="education" className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white border-l-4 border-blue-500 pl-3 mb-4">
-                Education
-              </h2>
-              <div className="space-y-4">
-                {unit.education_units
-                  .slice()
-                  .sort((a, b) => a.order - b.order)
-                  .map((e) => (
-                    <div key={e.id} className="flex gap-4">
-                      <div className="h-10 w-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center shrink-0 text-sm font-bold text-slate-500 dark:text-slate-400">
-                        {e.institution[0]?.toUpperCase()}
-                      </div>
+        {/* Education */}
+        {unit.education_units.length > 0 && (
+          <section id="education" data-section="education">
+            <SectionHeading>Education</SectionHeading>
+            <div className="relative pl-7 space-y-8">
+              <div className="absolute left-0 top-2 bottom-2 w-px bg-slate-200 dark:bg-slate-800" />
+              {unit.education_units
+                .slice()
+                .sort((a, b) => a.order - b.order)
+                .map((e) => (
+                  <div key={e.id} className="relative">
+                    <div className="absolute -left-[29px] top-1.5 w-3.5 h-3.5 rounded-full bg-violet-500 border-2 border-white dark:border-slate-950 shadow" />
+                    <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1 mb-1">
                       <div>
-                        <p className="font-semibold text-slate-900 dark:text-white">{e.institution}</p>
+                        <p className="font-bold text-slate-900 dark:text-slate-100 text-lg leading-snug">
+                          {e.institution}
+                        </p>
                         {e.degree && (
-                          <p className="text-slate-500 dark:text-slate-400 text-sm">
+                          <p className="text-violet-600 dark:text-violet-400 font-medium">
                             {e.degree}
                             {e.field_of_study ? ` in ${e.field_of_study}` : ''}
                           </p>
                         )}
-                        <p className="text-xs text-slate-400 dark:text-slate-500">
-                          {formatDate(e.from_date)} – {formatDate(e.to_date)}
-                        </p>
-                        {e.description && (
-                          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{e.description}</p>
-                        )}
                       </div>
+                      <p className="text-sm text-slate-400 dark:text-slate-500 shrink-0 pt-0.5">
+                        {formatDate(e.from_date)} – {formatDate(e.to_date)}
+                      </p>
                     </div>
-                  ))}
-              </div>
+                    {e.description && (
+                      <p className="text-slate-600 dark:text-slate-300 leading-relaxed">{e.description}</p>
+                    )}
+                  </div>
+                ))}
             </div>
-          )}
+          </section>
+        )}
 
-          {/* Portfolio */}
-          {unit.portfolio_items.length > 0 && (
-            <div data-section="portfolio" className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6">
-              <h2 className="text-lg font-bold text-slate-900 dark:text-white border-l-4 border-blue-500 pl-3 mb-4">
-                Portfolio
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {unit.portfolio_items
-                  .slice()
-                  .sort((a, b) => a.order - b.order)
-                  .map((p) => (
-                    <div
-                      key={p.id}
-                      className="border border-slate-100 dark:border-slate-700 rounded-xl p-4"
-                    >
-                      {p.image && (
+        {/* Portfolio */}
+        {unit.portfolio_items.length > 0 && (
+          <section id="projects" data-section="portfolio">
+            <SectionHeading>Projects</SectionHeading>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              {unit.portfolio_items
+                .slice()
+                .sort((a, b) => a.order - b.order)
+                .map((p) => (
+                  <div
+                    key={p.id}
+                    className="group rounded-2xl border border-slate-200 dark:border-slate-800 overflow-hidden hover:shadow-xl dark:hover:shadow-slate-900/50 transition-all duration-300"
+                  >
+                    {p.image ? (
+                      <div className="h-48 overflow-hidden bg-slate-100 dark:bg-slate-800">
                         <img
                           src={p.image}
                           alt={p.title}
-                          className="w-full h-32 object-cover rounded-lg mb-3"
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                         />
-                      )}
-                      <p className="font-semibold text-slate-900 dark:text-white">{p.title}</p>
+                      </div>
+                    ) : (
+                      <div className="h-48 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center">
+                        <span className="text-4xl font-bold text-slate-300 dark:text-slate-600">
+                          {p.title[0]?.toUpperCase()}
+                        </span>
+                      </div>
+                    )}
+                    <div className="p-5">
                       {p.category && (
-                        <p className="text-xs text-blue-500 dark:text-blue-400 mb-1">{p.category}</p>
+                        <span className="text-xs font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+                          {p.category}
+                        </span>
                       )}
+                      <h3 className="font-bold text-slate-900 dark:text-slate-100 text-lg mt-1 leading-snug">
+                        {p.title}
+                      </h3>
                       {p.description && (
-                        <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-3">
+                        <p className="mt-2 text-sm text-slate-600 dark:text-slate-400 leading-relaxed line-clamp-3">
                           {p.description}
                         </p>
                       )}
                       {p.links.length > 0 && (
-                        <div className="flex gap-2 mt-2">
+                        <div className="flex gap-4 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                           {p.links.map((l, i) => (
                             <a
                               key={i}
                               href={l.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                              className="flex items-center gap-1.5 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-500 transition-colors"
                             >
-                              {l.name}
+                              <ExternalLink size={13} /> {l.name}
                             </a>
                           ))}
                         </div>
                       )}
                     </div>
-                  ))}
-              </div>
+                  </div>
+                ))}
             </div>
-          )}
+          </section>
+        )}
 
-          {/* Certifications / Awards / Languages — 3-col grid */}
-          {hasBottomRow && (
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        {/* Certifications & Awards */}
+        {hasAchievements && (
+          <section id="achievements">
+            <SectionHeading>Certifications & Awards</SectionHeading>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-12 gap-y-8">
               {unit.certifications.length > 0 && (
-                <div data-section="certifications" className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5">
-                  <h2 className="text-base font-bold text-slate-900 dark:text-white border-l-4 border-blue-500 pl-3 mb-3">
+                <div data-section="certifications" className="space-y-5">
+                  <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-4">
                     Certifications
-                  </h2>
-                  <div className="space-y-2">
-                    {unit.certifications
-                      .slice()
-                      .sort((a, b) => a.order - b.order)
-                      .map((c, i) => (
-                        <div key={i}>
-                          <p className="text-sm font-medium text-slate-900 dark:text-white">{c.name}</p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400">{c.issuing_organization}</p>
+                  </p>
+                  {unit.certifications
+                    .slice()
+                    .sort((a, b) => a.order - b.order)
+                    .map((c, i) => (
+                      <div key={i} className="flex gap-4 items-start">
+                        {c.image ? (
+                          <img
+                            src={c.image}
+                            alt={c.name}
+                            className="h-11 w-11 rounded-xl object-contain shrink-0 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-1"
+                          />
+                        ) : (
+                          <div className="h-11 w-11 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0 text-blue-600 dark:text-blue-400 font-bold text-sm">
+                            {c.issuing_organization[0]?.toUpperCase()}
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="font-semibold text-slate-900 dark:text-slate-100 text-sm leading-snug">
+                            {c.name}
+                          </p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                            {c.issuing_organization}
+                            {c.issue_date ? ` · ${formatDate(c.issue_date)}` : ''}
+                          </p>
                           {c.credential_url && (
                             <a
                               href={c.credential_url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-xs text-blue-500 hover:underline"
+                              className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1"
                             >
-                              View
+                              <ExternalLink size={10} /> View credential
                             </a>
                           )}
                         </div>
-                      ))}
-                  </div>
-                </div>
-              )}
-              {unit.awards.length > 0 && (
-                <div data-section="awards" className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5">
-                  <h2 className="text-base font-bold text-slate-900 dark:text-white border-l-4 border-blue-500 pl-3 mb-3">
-                    Awards
-                  </h2>
-                  <div className="space-y-2">
-                    {unit.awards
-                      .slice()
-                      .sort((a, b) => a.order - b.order)
-                      .map((a, i) => (
-                        <div key={i}>
-                          <p className="text-sm font-medium text-slate-900 dark:text-white">{a.title}</p>
-                          {a.issuer && <p className="text-xs text-slate-500 dark:text-slate-400">{a.issuer}</p>}
-                          {a.date && (
-                            <p className="text-xs text-slate-400 dark:text-slate-500">{formatDate(a.date)}</p>
-                          )}
-                        </div>
-                      ))}
-                  </div>
-                </div>
-              )}
-              {unit.languages.length > 0 && (
-                <div data-section="languages" className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-5">
-                  <h2 className="text-base font-bold text-slate-900 dark:text-white border-l-4 border-blue-500 pl-3 mb-3">
-                    Languages
-                  </h2>
-                  <div className="space-y-2">
-                    {unit.languages.map((l, i) => (
-                      <div key={i} className="flex justify-between items-center">
-                        <p className="text-sm font-medium text-slate-900 dark:text-white">{l.name}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">{l.level}</p>
                       </div>
                     ))}
-                  </div>
                 </div>
               )}
-            </div>
-          )}
 
-          {/* Custom Sections */}
-          {unit.custom_sections
-            .filter((cs) => cs.items.length > 0)
-            .slice()
-            .sort((a, b) => a.order - b.order)
-            .map((cs, i) => (
-              <div
-                key={i}
-                className="bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 p-6"
-              >
-                <h2 className="text-lg font-bold text-slate-900 dark:text-white border-l-4 border-blue-500 pl-3 mb-4">
-                  {cs.title}
-                </h2>
-                <div className="space-y-3">
-                  {cs.items
+              {unit.awards.length > 0 && (
+                <div data-section="awards" className="space-y-5">
+                  <p className="text-xs font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-4">
+                    Awards
+                  </p>
+                  {unit.awards
                     .slice()
                     .sort((a, b) => a.order - b.order)
-                    .map((item, ii) => (
-                      <div
-                        key={ii}
-                        className="border-b border-slate-100 dark:border-slate-700 last:border-0 pb-3 last:pb-0"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <p className="font-medium text-slate-900 dark:text-white">{item.title}</p>
-                            {item.subtitle && (
-                              <p className="text-sm text-slate-500 dark:text-slate-400">{item.subtitle}</p>
-                            )}
-                          </div>
-                          {(item.from_date || item.to_date) && (
-                            <p className="text-xs text-slate-400 dark:text-slate-500 shrink-0">
-                              {formatDate(item.from_date)} – {formatDate(item.to_date)}
+                    .map((a, i) => (
+                      <div key={i} className="flex gap-4 items-start">
+                        <div className="h-11 w-11 rounded-xl bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center shrink-0 text-xl">
+                          🏆
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-slate-900 dark:text-slate-100 text-sm leading-snug">
+                            {a.title}
+                          </p>
+                          {a.issuer && (
+                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                              {a.issuer}
+                              {a.date ? ` · ${formatDate(a.date)}` : ''}
+                            </p>
+                          )}
+                          {a.description && (
+                            <p className="text-xs text-slate-600 dark:text-slate-300 mt-1 leading-relaxed">
+                              {a.description}
                             </p>
                           )}
                         </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Languages */}
+        {unit.languages.length > 0 && (
+          <section data-section="languages">
+            <SectionHeading>Languages</SectionHeading>
+            <div className="flex flex-wrap gap-3">
+              {unit.languages.map((l, i) => (
+                <div
+                  key={i}
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900"
+                >
+                  <span className="font-semibold text-slate-900 dark:text-slate-100 text-sm">{l.name}</span>
+                  <span className="text-xs text-slate-400 dark:text-slate-500">{l.level}</span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Custom Sections */}
+        {unit.custom_sections
+          .filter((cs) => cs.items.length > 0)
+          .slice()
+          .sort((a, b) => a.order - b.order)
+          .map((cs, i) => (
+            <section key={i} data-section={`custom-${cs.title.toLowerCase().replace(/\s+/g, '-')}`}>
+              <SectionHeading>{cs.title}</SectionHeading>
+              <div className="space-y-6">
+                {cs.items
+                  .slice()
+                  .sort((a, b) => a.order - b.order)
+                  .map((item, ii) => (
+                    <div key={ii} className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                      <div className="min-w-0">
+                        <p className="font-semibold text-slate-900 dark:text-slate-100">{item.title}</p>
+                        {item.subtitle && (
+                          <p className="text-slate-500 dark:text-slate-400 text-sm">{item.subtitle}</p>
+                        )}
                         {item.description && (
-                          <p className="mt-1 text-sm text-slate-600 dark:text-slate-300">{item.description}</p>
+                          <p className="text-slate-600 dark:text-slate-300 text-sm mt-1 leading-relaxed">
+                            {item.description}
+                          </p>
                         )}
                         {item.url && (
                           <a
                             href={item.url}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-xs text-blue-500 hover:underline mt-1 block"
+                            className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline mt-1"
                           >
-                            View
+                            <ExternalLink size={11} /> View
                           </a>
                         )}
                       </div>
-                    ))}
-                </div>
+                      {(item.from_date || item.to_date) && (
+                        <p className="text-sm text-slate-400 dark:text-slate-500 shrink-0">
+                          {formatDate(item.from_date)} – {formatDate(item.to_date)}
+                        </p>
+                      )}
+                    </div>
+                  ))}
               </div>
-            ))}
+            </section>
+          ))}
+      </div>
+
+      {/* ── CTA Footer ────────────────────────────────────────────────────── */}
+      <div id="contact" className="bg-slate-900 text-white py-20 px-4 sm:px-8 text-center">
+        <h2 className="text-3xl sm:text-4xl font-bold">Let's work together</h2>
+        <p className="text-slate-400 text-lg mt-3 mb-8 max-w-md mx-auto">
+          Have a project in mind or want to connect? Reach out.
+        </p>
+        <div className="flex justify-center gap-3 flex-wrap">
+          <a
+            href={`mailto:${unit.email}`}
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-semibold transition-colors"
+          >
+            <Mail size={18} /> Get in touch
+          </a>
+          {unit.links.slice(0, 2).map((l, i) => (
+            <a
+              key={i}
+              href={l.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-semibold transition-colors"
+            >
+              {getLinkIcon(l, 16)} {l.name}
+            </a>
+          ))}
         </div>
       </div>
     </div>
