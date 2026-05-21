@@ -68,7 +68,7 @@ Response:
 Authorization: Bearer <access>
 ```
 
-Access token lifetime: **120 minutes**.
+Access token lifetime: **15 minutes**.
 Refresh token lifetime: **3 days**.
 
 **Refresh access token**
