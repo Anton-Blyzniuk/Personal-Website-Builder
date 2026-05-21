@@ -348,29 +348,42 @@ class TrackEngagementAPIView(APIView):
 
         referrer = data['referrer'] or _extract_domain(request.META.get('HTTP_REFERER', ''))
 
-        PWBUnitEngagement.objects.create(
-            pwb_unit       = pwb_unit,
-            session_id     = data['session_id'],
-            ip_hash        = _hash_ip(ip) if ip else '',
-            device_type    = device,
-            referrer       = referrer[:200],
-            page_url       = data['page_url'][:500],
-            time_on_page   = data['time_on_page'],
-            scroll_depth   = data['scroll_depth'],
-            screen_width   = data['screen_width'],
-            screen_height  = data['screen_height'],
-            viewport_width = data['viewport_width'],
-            viewport_height= data['viewport_height'],
-            language       = data['language'][:20],
-            timezone       = data['timezone'][:60],
-            color_scheme   = data['color_scheme'],
-            connection_type= data['connection_type'],
-            pdf_downloaded = data['pdf_downloaded'],
-            email_clicked  = data['email_clicked'],
-            phone_clicked  = data['phone_clicked'],
-            links_clicked  = data['links_clicked'],
-            sections_viewed= data['sections_viewed'],
+        eng_fields = dict(
+            ip_hash         = _hash_ip(ip) if ip else '',
+            device_type     = device,
+            referrer        = referrer[:200],
+            page_url        = data['page_url'][:500],
+            time_on_page    = data['time_on_page'],
+            scroll_depth    = data['scroll_depth'],
+            screen_width    = data['screen_width'],
+            screen_height   = data['screen_height'],
+            viewport_width  = data['viewport_width'],
+            viewport_height = data['viewport_height'],
+            language        = data['language'][:20],
+            timezone        = data['timezone'][:60],
+            color_scheme    = data['color_scheme'],
+            connection_type = data['connection_type'],
+            pdf_downloaded  = data['pdf_downloaded'],
+            email_clicked   = data['email_clicked'],
+            phone_clicked   = data['phone_clicked'],
+            links_clicked   = data['links_clicked'],
+            sections_viewed = data['sections_viewed'],
         )
+
+        session_id = data['session_id']
+        if session_id:
+            # Upsert: early-flush and pagehide both send the same session_id.
+            # Always overwrite with the latest payload so the final beacon
+            # (which has the most complete click/scroll data) wins.
+            PWBUnitEngagement.objects.update_or_create(
+                pwb_unit   = pwb_unit,
+                session_id = session_id,
+                defaults   = eng_fields,
+            )
+        else:
+            PWBUnitEngagement.objects.create(
+                pwb_unit=pwb_unit, session_id='', **eng_fields
+            )
 
         return Response(status=status.HTTP_204_NO_CONTENT)
 ```
@@ -530,7 +543,7 @@ Add `track_engagement` to `DEFAULT_THROTTLE_RATES` (inside the existing `REST_FR
         "track_engagement": "60/hour",
 ```
 
-60 requests/hour per anonymous IP is generous (one per page visit + 1 mid-session beacon).
+60 requests/hour per anonymous IP is generous (one early flush at 45 s + one final pagehide beacon per visit).
 
 ---
 
@@ -655,6 +668,7 @@ export function useEngagementTracker(unitName: string | undefined): void {
       if (pct > maxScroll.current) maxScroll.current = Math.min(pct, 100);
     }
     window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll(); // capture depth for pages that fit in viewport without scrolling
 
     // ── Section visibility (IntersectionObserver) ────────────────────────────
     // CV templates should add data-section="experience" etc. to section roots.
@@ -679,9 +693,9 @@ export function useEngagementTracker(unitName: string | undefined): void {
       const href = anchor.href ?? '';
       const text = (anchor.textContent ?? anchor.title ?? '').trim().slice(0, 100);
 
-      if (href.endsWith('.pdf') || href.includes('fl_attachment') || anchor.download) {
-        pdfClicked.current = true;
-      }
+      let isPdf = !!anchor.download || href.includes('fl_attachment');
+      if (!isPdf) { try { isPdf = new URL(href, location.href).pathname.toLowerCase().endsWith('.pdf'); } catch (_) {} }
+      if (isPdf) pdfClicked.current = true;
       if (href.startsWith('mailto:')) {
         emailClicked.current = true;
       }
@@ -732,10 +746,11 @@ export function useEngagementTracker(unitName: string | undefined): void {
       }
     }
 
-    // Fetch path (early flush while user is still on page)
+    // Fetch path (early flush while user is still on page).
+    // Does NOT set flushed=true — pagehide will fire again with the final complete payload.
+    // The backend uses update_or_create on session_id so both payloads merge (latest wins).
     function flushFetch() {
       if (flushed.current) return;
-      // Do NOT set flushed=true here — sendBeacon will fire again on unload with updated data
       apiClient
         .post(`/pwbunits/${unitName}/track-engagement/`, buildPayload())
         .catch(() => {});

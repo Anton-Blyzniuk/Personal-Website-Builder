@@ -68,6 +68,7 @@ export function useEngagementTracker(unitName: string | undefined): void {
       if (pct > maxScroll.current) maxScroll.current = Math.min(pct, 100);
     }
     window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll(); // capture depth for pages that fit in viewport without scrolling
 
     // ── Section visibility ────────────────────────────────────────────────
     const sectionObserver = new IntersectionObserver(
@@ -90,9 +91,9 @@ export function useEngagementTracker(unitName: string | undefined): void {
       const href = (anchor as HTMLAnchorElement).href ?? '';
       const text = ((anchor as HTMLAnchorElement).textContent ?? (anchor as HTMLAnchorElement).title ?? '').trim().slice(0, 100);
 
-      if (href.endsWith('.pdf') || href.includes('fl_attachment') || (anchor as HTMLAnchorElement).download) {
-        pdfClicked.current = true;
-      }
+      let isPdf = !!(anchor as HTMLAnchorElement).download || href.includes('fl_attachment');
+      if (!isPdf) { try { isPdf = new URL(href, location.href).pathname.toLowerCase().endsWith('.pdf'); } catch (_) {} }
+      if (isPdf) pdfClicked.current = true;
       if (href.startsWith('mailto:')) emailClicked.current = true;
       if (href.startsWith('tel:'))    phoneClicked.current = true;
 
