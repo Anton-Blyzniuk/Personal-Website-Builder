@@ -50,7 +50,7 @@ export function ClassicTemplate({ unit }: TemplateProps) {
       <div className="flex flex-col md:flex-row">
         {/* Sidebar */}
         <div className="w-full md:w-[30%] bg-slate-50 dark:bg-slate-800 p-6 space-y-6">
-          <section>
+          <section data-section="contact">
             <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 border-b border-slate-200 dark:border-slate-700 pb-1 mb-3">
               Contact
             </h2>
@@ -62,7 +62,7 @@ export function ClassicTemplate({ unit }: TemplateProps) {
           </section>
 
           {unit.skills.length > 0 && (
-            <section>
+            <section data-section="skills">
               <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 border-b border-slate-200 dark:border-slate-700 pb-1 mb-3">
                 Skills
               </h2>
@@ -89,7 +89,7 @@ export function ClassicTemplate({ unit }: TemplateProps) {
           )}
 
           {unit.languages.length > 0 && (
-            <section>
+            <section data-section="languages">
               <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 border-b border-slate-200 dark:border-slate-700 pb-1 mb-3">
                 Languages
               </h2>
@@ -105,7 +105,7 @@ export function ClassicTemplate({ unit }: TemplateProps) {
           )}
 
           {unit.education_units.length > 0 && (
-            <section>
+            <section data-section="education">
               <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 border-b border-slate-200 dark:border-slate-700 pb-1 mb-3">
                 Education
               </h2>
@@ -130,7 +130,7 @@ export function ClassicTemplate({ unit }: TemplateProps) {
           )}
 
           {unit.links.length > 0 && (
-            <section>
+            <section data-section="links">
               <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 border-b border-slate-200 dark:border-slate-700 pb-1 mb-3">
                 Links
               </h2>
@@ -154,7 +154,7 @@ export function ClassicTemplate({ unit }: TemplateProps) {
         {/* Main column */}
         <div className="flex-1 p-6 space-y-6">
           {unit.about && (
-            <section>
+            <section data-section="about">
               <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 border-b border-slate-200 dark:border-slate-700 pb-1 mb-3">
                 About
               </h2>
@@ -163,7 +163,7 @@ export function ClassicTemplate({ unit }: TemplateProps) {
           )}
 
           {unit.experience_units.length > 0 && (
-            <section>
+            <section data-section="experience">
               <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 border-b border-slate-200 dark:border-slate-700 pb-1 mb-3">
                 Experience
               </h2>
@@ -197,7 +197,7 @@ export function ClassicTemplate({ unit }: TemplateProps) {
           )}
 
           {unit.portfolio_items.length > 0 && (
-            <section>
+            <section data-section="portfolio">
               <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 border-b border-slate-200 dark:border-slate-700 pb-1 mb-3">
                 Portfolio
               </h2>
@@ -234,7 +234,7 @@ export function ClassicTemplate({ unit }: TemplateProps) {
           )}
 
           {unit.certifications.length > 0 && (
-            <section>
+            <section data-section="certifications">
               <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 border-b border-slate-200 dark:border-slate-700 pb-1 mb-3">
                 Certifications
               </h2>
@@ -266,7 +266,7 @@ export function ClassicTemplate({ unit }: TemplateProps) {
           )}
 
           {unit.awards.length > 0 && (
-            <section>
+            <section data-section="awards">
               <h2 className="text-xs font-bold uppercase tracking-widest text-blue-600 border-b border-slate-200 dark:border-slate-700 pb-1 mb-3">
                 Awards
               </h2>

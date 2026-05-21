@@ -273,6 +273,42 @@ export interface AnalyticsReferrer {
   count: number;
 }
 
+export interface EngagementSectionEntry {
+  section: string;
+  count: number;
+}
+
+export interface EngagementLinkEntry {
+  link: string;
+  count: number;
+}
+
+export interface EngagementLanguageEntry {
+  language: string;
+  count: number;
+}
+
+export interface EngagementTimezoneEntry {
+  timezone: string;
+  count: number;
+}
+
+export interface EngagementData {
+  total_sessions:    number;
+  avg_time_on_page:  number | null;
+  avg_scroll_depth:  number | null;
+  pdf_downloads:     number;
+  email_clicks:      number;
+  phone_clicks:      number;
+  top_sections:      EngagementSectionEntry[];
+  top_links_clicked: EngagementLinkEntry[];
+  by_language:       EngagementLanguageEntry[];
+  by_timezone:       EngagementTimezoneEntry[];
+  by_color_scheme:   Record<string, number>;
+  by_connection:     Record<string, number>;
+  top_resolutions:   { resolution: string; count: number }[];
+}
+
 export interface AnalyticsData {
   total_views: number;
   unique_visitors: number;
@@ -284,6 +320,7 @@ export interface AnalyticsData {
   by_source: { web: number; api: number };
   by_device: Record<string, number>;
   top_referrers: AnalyticsReferrer[];
+  engagement?: EngagementData;
 }
 
 // ─── Pagination ──────────────────────────────────────────────────────────────

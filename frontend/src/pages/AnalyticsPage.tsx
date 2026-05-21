@@ -4,7 +4,7 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, PieChart, Pie, Cell, Legend,
 } from 'recharts';
-import { BarChart2, Globe, Monitor, Smartphone, Tablet, Bot, TrendingUp, Users, Eye, Zap, RefreshCw } from 'lucide-react';
+import { BarChart2, Globe, Monitor, Smartphone, Tablet, Bot, TrendingUp, Users, Eye, Zap, RefreshCw, Clock, ArrowDownToLine, FileDown, Mail } from 'lucide-react';
 import { analyticsApi } from '../api/analytics';
 import { pwbUnitsApi } from '../api/pwbunits';
 import { DashboardLayout } from '../components/layout/DashboardLayout';
@@ -40,12 +40,13 @@ function fmtDate(iso: string, period: number): string {
 // ─── Stat card ────────────────────────────────────────────────────────────────
 
 function StatCard({
-  label, value, icon, accent,
+  label, value, icon, accent, unit,
 }: {
   label: string;
   value: number;
   icon: React.ReactNode;
   accent: string;
+  unit?: string;
 }) {
   return (
     <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4 flex items-center gap-4">
@@ -53,7 +54,9 @@ function StatCard({
         {icon}
       </div>
       <div>
-        <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">{fmt(value)}</p>
+        <p className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+          {fmt(value)}{unit && <span className="text-base font-normal text-slate-400 ml-0.5">{unit}</span>}
+        </p>
         <p className="text-xs text-slate-500 dark:text-slate-500 mt-0.5">{label}</p>
       </div>
     </div>
@@ -333,6 +336,128 @@ function AnalyticsContent({ unitName, period }: { unitName: string; period: numb
             })}
           </div>
         </div>
+      )}
+
+      {/* ── Engagement metrics ─────────────────────────────────────────────── */}
+      {data.engagement && data.engagement.total_sessions > 0 && (
+        <>
+          <div className="flex items-center gap-3 pt-1">
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 shrink-0">Visitor engagement</p>
+            <div className="flex-1 h-px bg-slate-200 dark:bg-slate-800" />
+            <span className="text-xs text-slate-400 dark:text-slate-600 shrink-0">{data.engagement.total_sessions} session{data.engagement.total_sessions !== 1 ? 's' : ''}</span>
+          </div>
+          {/* Engagement stat cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {data.engagement.avg_time_on_page !== null && (
+              <StatCard
+                label="Avg time on page"
+                value={data.engagement.avg_time_on_page}
+                icon={<Clock className="h-5 w-5 text-cyan-400" />}
+                accent="bg-cyan-500/10"
+                unit="s"
+              />
+            )}
+            {data.engagement.avg_scroll_depth !== null && (
+              <StatCard
+                label="Avg scroll depth"
+                value={data.engagement.avg_scroll_depth}
+                icon={<ArrowDownToLine className="h-5 w-5 text-indigo-400" />}
+                accent="bg-indigo-500/10"
+                unit="%"
+              />
+            )}
+            <StatCard
+              label="PDF downloads"
+              value={data.engagement.pdf_downloads}
+              icon={<FileDown className="h-5 w-5 text-orange-400" />}
+              accent="bg-orange-500/10"
+            />
+            <StatCard
+              label="Email clicks"
+              value={data.engagement.email_clicks}
+              icon={<Mail className="h-5 w-5 text-rose-400" />}
+              accent="bg-rose-500/10"
+            />
+          </div>
+
+          {/* Sections viewed + Links clicked */}
+          {(data.engagement.top_sections.length > 0 || data.engagement.top_links_clicked.length > 0) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {data.engagement.top_sections.length > 0 && (
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Sections viewed</p>
+                  <div className="space-y-2">
+                    {data.engagement.top_sections.map((s, i) => {
+                      const pct = Math.round((s.count / data.engagement!.top_sections[0].count) * 100);
+                      return (
+                        <div key={s.section} className="flex items-center gap-2 text-sm">
+                          <span className="text-slate-400 dark:text-slate-600 w-4 text-right text-xs shrink-0">{i + 1}</span>
+                          <span className="text-slate-600 dark:text-slate-400 flex-1 capitalize">{s.section}</span>
+                          <div className="w-20 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shrink-0">
+                            <div className="h-full bg-indigo-400 rounded-full" style={{ width: `${pct}%` }} />
+                          </div>
+                          <span className="font-semibold text-slate-700 dark:text-slate-300 w-8 text-right shrink-0">{fmt(s.count)}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              {data.engagement.top_links_clicked.length > 0 && (
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Links clicked</p>
+                  <div className="space-y-2">
+                    {data.engagement.top_links_clicked.map((l, i) => {
+                      const pct = Math.round((l.count / data.engagement!.top_links_clicked[0].count) * 100);
+                      return (
+                        <div key={l.link} className="flex items-center gap-2 text-sm">
+                          <span className="text-slate-400 dark:text-slate-600 w-4 text-right text-xs shrink-0">{i + 1}</span>
+                          <span className="text-slate-600 dark:text-slate-400 flex-1 truncate font-mono text-xs">{l.link}</span>
+                          <div className="w-20 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden shrink-0">
+                            <div className="h-full bg-amber-400 rounded-full" style={{ width: `${pct}%` }} />
+                          </div>
+                          <span className="font-semibold text-slate-700 dark:text-slate-300 w-8 text-right shrink-0">{fmt(l.count)}</span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Language + Timezone breakdown */}
+          {(data.engagement.by_language.length > 0 || data.engagement.by_timezone.length > 0) && (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {data.engagement.by_language.length > 0 && (
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Languages</p>
+                  <div className="space-y-2">
+                    {data.engagement.by_language.map((l) => (
+                      <div key={l.language} className="flex items-center gap-2 text-sm">
+                        <span className="text-slate-600 dark:text-slate-400 flex-1 font-mono text-xs">{l.language}</span>
+                        <span className="font-semibold text-slate-700 dark:text-slate-300">{fmt(l.count)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {data.engagement.by_timezone.length > 0 && (
+                <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-4">Timezones</p>
+                  <div className="space-y-2">
+                    {data.engagement.by_timezone.map((t) => (
+                      <div key={t.timezone} className="flex items-center gap-2 text-sm">
+                        <span className="text-slate-600 dark:text-slate-400 flex-1 font-mono text-xs truncate">{t.timezone}</span>
+                        <span className="font-semibold text-slate-700 dark:text-slate-300">{fmt(t.count)}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

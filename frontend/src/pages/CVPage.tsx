@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { pwbUnitsApi } from '../api/pwbunits';
 import { analyticsApi } from '../api/analytics';
+import { useEngagementTracker } from '../hooks/useEngagementTracker';
 import { ClassicTemplate } from '../components/cv-templates/ClassicTemplate';
 import { ModernTemplate } from '../components/cv-templates/ModernTemplate';
 import { MinimalTemplate } from '../components/cv-templates/MinimalTemplate';
@@ -30,6 +31,8 @@ export function CVPage() {
     tracked.current = true;
     analyticsApi.track(unit.unit_name, document.referrer);
   }, [unit]);
+
+  useEngagementTracker(unit?.unit_name);
 
   useEffect(() => {
     if (!unit) return;
