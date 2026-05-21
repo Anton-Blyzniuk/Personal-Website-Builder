@@ -119,21 +119,23 @@ GET ${base}/teammates/
 GET ${base}/teammates/<id>/
   res: list shape + date_of_birth:date|null, story:str|null
 
-### Analytics — Track View  [public, throttle 60/hr]
-POST ${base}/pwbunits/<unit_name>/track-view/
-  body: {"referrer":"string"}  (all optional)
+### Analytics — Track View  [public, throttle 120/hr]
+POST ${base}/pwbunits/<unit_name>/track/
+  body: {"referrer":"string"}  (optional; document.referrer value)
   204: no body
   Records a web page view. Bots filtered by User-Agent.
 
 ### Analytics — Track Engagement  [public, throttle 60/hr]
 POST ${base}/pwbunits/<unit_name>/track-engagement/
   All body fields optional. Use navigator.sendBeacon or fetch with keepalive:true on page leave.
+  Call twice: after 45s (early flush) AND on pagehide. The backend deduplicates via session_id
+  (update_or_create) — the final pagehide payload always wins with the most complete data.
   body fields:
     session_id      string       UUID from sessionStorage (key "pwb_session") — correlates view+engagement
     referrer        string       document.referrer
     page_url        string       window.location.href (max 500)
     time_on_page    int(seconds) seconds from load to flush
-    scroll_depth    int 0–100    max scroll % achieved
+    scroll_depth    int 0–100    max scroll % achieved (100 if page fits in viewport)
     screen_width    int          window.screen.width
     screen_height   int          window.screen.height
     viewport_width  int          window.innerWidth
@@ -142,22 +144,48 @@ POST ${base}/pwbunits/<unit_name>/track-engagement/
     timezone        string       Intl.DateTimeFormat().resolvedOptions().timeZone
     color_scheme    dark|light|unknown
     connection_type 4g|3g|2g|slow-2g|unknown  navigator.connection.effectiveType
-    pdf_downloaded  bool         true if PDF/download link clicked
+    pdf_downloaded  bool         true if PDF/download link clicked (detected via URL pathname)
     email_clicked   bool         true if mailto: link clicked
     phone_clicked   bool         true if tel: link clicked
     links_clicked   string[]     text of links clicked (max 20)
     sections_viewed string[]     section IDs that reached ≥30% viewport (e.g. ["experience","skills"])
+                                 requires data-section="..." attributes on section elements
   204: no body
   Data appears in owner's Analytics dashboard under "Visitor engagement".
+
+### Analytics — Get Analytics  [owner only, JWT/Key]
+GET ${base}/pwbunits/<unit_name>/analytics/?period=30
+  period: int 7–365 (default 30) — number of days to aggregate
+  200: {
+    total_views, unique_visitors, web_views, api_views, all_time_total, period_days,
+    views_over_time: [{date, total, web, api}],
+    by_source: {web, api},
+    by_device: {desktop, mobile, tablet},
+    top_referrers: [{referrer, count}],
+    engagement: {
+      total_sessions, avg_time_on_page (s|null), avg_scroll_depth (0-100|null),
+      pdf_downloads, email_clicks, phone_clicks,
+      top_sections: [{section, count}],
+      top_links_clicked: [{link, count}],
+      by_language: [{language, count}],
+      by_timezone: [{timezone, count}],
+      by_color_scheme: {dark:N, light:N, ...},
+      by_connection: {4g:N, 3g:N, ...},
+      top_resolutions: [{resolution, count}]
+    }
+  }
 
 ### Analytics — Tracker Script  [public static file]
 GET ${base.replace('/api/v1', '')}/static/pwb-tracker.js
   Drop-in vanilla JS tracker. Include via:
     <script src="${base.replace('/api/v1', '')}/static/pwb-tracker.js" data-unit="UNIT" data-api="${base.replace('/api/v1', '')}"></script>
   Or: window.PWBConfig = { unit:'UNIT', api:'BASE_URL' }; before the script tag.
-  Auto-tracks: scroll depth, time on page, section visibility (data-section attributes),
-  link/PDF/email/tel clicks, screen size, language, timezone, color scheme, connection type.
-  Sends on pagehide via sendBeacon + keepalive fetch at 45s.
+  Auto-tracks: scroll depth (100% if page fits in viewport), time on page,
+  section visibility (data-section attributes), link/PDF/email/tel clicks,
+  screen size, language, timezone, color scheme, connection type.
+  PDF detection uses URL pathname (handles query strings).
+  Sends on pagehide via sendBeacon + keepalive fetch at 45s (early flush does NOT
+  block the final pagehide send — backend deduplicates by session_id).
 
 ## Write Schemas for PWBUnit Nested Arrays
 
@@ -213,7 +241,7 @@ experience_units include {id,...writeFields}
 ## Rate Limits (per anonymous IP)
 POST /user/register/, POST /admin/register/ → 10/hour
 POST /token/ → 20/hour
-POST /pwbunits/<unit>/track-view/ → 60/hour
+POST /pwbunits/<unit>/track/ → 120/hour
 POST /pwbunits/<unit>/track-engagement/ → 60/hour
 Authenticated endpoints: not throttled. Exceeded → 429 Too Many Requests.
 `;
@@ -245,6 +273,7 @@ const NAV: NavItem[] = [
       { id: 'ep-teammates',            title: 'Teammates' },
       { id: 'ep-analytics-view',       title: 'Analytics — Track View' },
       { id: 'ep-analytics-engagement', title: 'Analytics — Track Engagement' },
+      { id: 'ep-analytics-get',        title: 'Analytics — Get Data' },
     ],
   },
   { id: 'tracker-script', title: 'Tracker Script' },
@@ -1075,12 +1104,12 @@ is_main   bool   optional (default false) — "true"/"1"/"yes" accepted`}</CodeB
                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
                   Public endpoint. Called by the CV page to record a web visit. No auth required.
                 </p>
-                <EndpointCard method="POST" path="/pwbunits/{unit_name}/track-view/" description="Record a page view" auth="public">
+                <EndpointCard method="POST" path="/pwbunits/{unit_name}/track/" description="Record a page view" auth="public">
                   <ReqBlock>{`{
-  "referrer": "https://google.com"  // optional; document.referrer
+  "referrer": "https://google.com"  // optional; document.referrer value
 }`}</ReqBlock>
                   <ResBlock status={204}>{`// No body`}</ResBlock>
-                  <p className="text-xs text-slate-500">Throttled: 60 req/hour per IP. Bots filtered automatically via User-Agent.</p>
+                  <p className="text-xs text-slate-500">Throttled: 120 req/hour per IP. Bots filtered automatically via User-Agent.</p>
                 </EndpointCard>
               </Sub>
 
@@ -1156,6 +1185,46 @@ navigator.sendBeacon(url, new Blob([payload], { type: 'application/json' }));
                   </div>
                   <ResBlock status={204}>{`// No body`}</ResBlock>
                   <p className="text-xs text-slate-500">Throttled: 60 req/hour per IP. Bots filtered automatically. Data appears in your Analytics dashboard under "Visitor engagement".</p>
+                </EndpointCard>
+              </Sub>
+
+              <Sub id="ep-analytics-get" title="Analytics — Get Data">
+                <p className="text-sm text-slate-600 dark:text-slate-400 mb-2">
+                  Owner-only. Returns aggregated view stats and engagement metrics for the specified period.
+                </p>
+                <EndpointCard method="GET" path="/pwbunits/{unit_name}/analytics/?period=30" description="Get analytics and engagement data for a unit" auth="owner">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1.5">Query params</p>
+                    <CodeBlock>{`period   int   7–365, default 30 — number of days to aggregate`}</CodeBlock>
+                  </div>
+                  <ResBlock status={200}>{`{
+  "total_views": 142,
+  "unique_visitors": 98,
+  "web_views": 130,
+  "api_views": 12,
+  "all_time_total": 500,
+  "period_days": 30,
+  "views_over_time": [{ "date": "2026-04-21", "total": 5, "web": 4, "api": 1 }],
+  "by_source": { "web": 130, "api": 12 },
+  "by_device": { "desktop": 80, "mobile": 50, "tablet": 12 },
+  "top_referrers": [{ "referrer": "linkedin.com", "count": 34 }],
+  "engagement": {
+    "total_sessions": 120,
+    "avg_time_on_page": 73,       // seconds, null if no data
+    "avg_scroll_depth": 68,       // 0–100, null if no data
+    "pdf_downloads": 12,
+    "email_clicks": 8,
+    "phone_clicks": 3,
+    "top_sections": [{ "section": "experience", "count": 98 }],
+    "top_links_clicked": [{ "link": "GitHub", "count": 34 }],
+    "by_language": [{ "language": "en-US", "count": 80 }],
+    "by_timezone": [{ "timezone": "Europe/Kyiv", "count": 55 }],
+    "by_color_scheme": { "dark": 90, "light": 52 },
+    "by_connection": { "4g": 110, "3g": 32 },
+    "top_resolutions": [{ "resolution": "1920x1080", "count": 45 }]
+  }
+}`}</ResBlock>
+                  <p className="text-xs text-slate-500">Returns 403 if the authenticated user is not the owner. <code className="font-mono">engagement</code> fields default to 0 or null when no engagement records exist for the period.</p>
                 </EndpointCard>
               </Sub>
             </Section>
@@ -1325,8 +1394,8 @@ navigator.sendBeacon(url, new Blob([payload], { type: 'application/json' }));
                     {[
                       ['registration',      '10 / hour', 'POST /user/register/,  POST /admin/register/'],
                       ['token',             '20 / hour', 'POST /token/'],
-                      ['track_view',        '60 / hour', 'POST /pwbunits/{unit}/track-view/'],
-                      ['track_engagement',  '60 / hour', 'POST /pwbunits/{unit}/track-engagement/'],
+                      ['track_view',        '120 / hour', 'POST /pwbunits/{unit}/track/'],
+                      ['track_engagement',  '60 / hour',  'POST /pwbunits/{unit}/track-engagement/'],
                     ].map(([scope, limit, paths]) => (
                       <tr key={scope} className="bg-white dark:bg-slate-900">
                         <td className="px-4 py-3 font-mono text-xs text-slate-700 dark:text-slate-300">{scope}</td>
